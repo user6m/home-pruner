@@ -1,0 +1,16 @@
+{
+  "name": "home-pruner",
+  "version": "0.1.0",
+  "description": "An interactive CLI tool to delete local git branches safely.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "user6m",
+  "license": "MIT",
+  "type": "commonjs",
+  "bin": {
+    "home-pruners": "src/cli.js"
+  }
+}
