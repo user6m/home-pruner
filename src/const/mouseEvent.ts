@@ -1,0 +1,6 @@
+export enum MOUSE_EVENT {
+  MOUSE_SCROLL_EVENT_START = "\x1b[?1006h",
+  MOUSE_SCROLL_EVENT_END = "\x1b[?1006l",
+  DRAG_EVENT_START = "\x1b[?1002h",
+  DRAG_EVENT_END = "\x1b[?1002l",
+}

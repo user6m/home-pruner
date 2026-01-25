@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-// src/domain/branch.ts
-function makeBranch(name, CurrntBranchName) {
+// src/modules/createBranch.ts
+function createBranch(name, CurrntBranchName) {
   const isCurrent = name === CurrntBranchName;
   const branch = {
     name,
@@ -15,7 +15,7 @@ function makeBranch(name, CurrntBranchName) {
 
 // src/modules/buildLocalBranches.ts
 function buildLocalBranches(currentBranchName, localBranchNames) {
-  const formatted = localBranchNames.sort((a, b) => a.localeCompare(b, "en", { numeric: true })).map((name) => makeBranch(name, currentBranchName));
+  const formatted = localBranchNames.sort((a, b) => a.localeCompare(b, "en", { numeric: true })).map((name) => createBranch(name, currentBranchName));
   return formatted;
 }
 
@@ -64,6 +64,23 @@ function printErrorAndSetExitCode(e) {
 
 // src/cli.ts
 function main() {
+  const {
+    currentBranchName: _currentBranchName,
+    localBranchNames: _localBranchNames,
+    branchList
+  } = prepareBranches();
+  const state = initializeState(branchList);
+  console.log("Initial State:", state);
+  const secondState = actionReducer(state, { type: "DOWN" });
+  console.log("Second state:", secondState);
+  const thirdState = actionReducer(state, { type: "UP" });
+  console.log("Third state:", thirdState);
+  const fourthState = actionReducer(state, { type: "TOGGLE" });
+  console.log("Fouth state:", fourthState);
+  const fifthState = actionReducer(state, { type: "TOGGLE" });
+  console.log("Fifth state:", fifthState);
+}
+function prepareBranches() {
   const isGitRepo = (() => {
     try {
       execFileSync("git", ["rev-parse", "--is-inside-work-tree"], {
@@ -113,7 +130,40 @@ function main() {
     currentBranchName ?? "",
     localBranchNames ?? []
   );
-  console.log("Local Branches:", branchList);
+  return {
+    currentBranchName,
+    localBranchNames,
+    branchList
+  };
+}
+function initializeState(branches) {
+  return {
+    branches,
+    cursorIndex: 0
+  };
+}
+function actionReducer(state, action) {
+  const { branches, cursorIndex } = state;
+  switch (action.type) {
+    case "UP": {
+      const next = Math.max(0, cursorIndex - 1);
+      return next === cursorIndex ? state : { ...state, cursorIndex: next };
+    }
+    case "DOWN": {
+      const last = Math.max(0, branches.length - 1);
+      const next = Math.min(last, cursorIndex + 1);
+      return next === cursorIndex ? state : { ...state, cursorIndex: next };
+    }
+    case "TOGGLE": {
+      const current = branches[cursorIndex];
+      if (!current) return state;
+      if (!current.isSelectable) return state;
+      const nextBranches = branches.map(
+        (b, i) => i === cursorIndex ? { ...b, isSelected: !b.isSelected } : b
+      );
+      return { ...state, branches: nextBranches };
+    }
+  }
 }
 try {
   main();

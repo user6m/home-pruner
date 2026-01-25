@@ -1,11 +1,6 @@
-export type Branch = {
-  name: string;
-  isCurrent: boolean;
-  isSelected: boolean;
-  isSelectable: boolean;
-};
+import type { Branch } from "../type/branch";
 
-export function makeBranch(name: string, CurrntBranchName: string): Branch {
+export function createBranch(name: string, CurrntBranchName: string): Branch {
   const isCurrent = name === CurrntBranchName;
   const branch: Branch = {
     name,

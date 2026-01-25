@@ -1,4 +1,5 @@
-import { makeBranch, type Branch } from "../domain/branch";
+import type { Branch } from "../type/branch";
+import { createBranch } from "./createBranch";
 
 export function buildLocalBranches(
   currentBranchName: string,
@@ -6,6 +7,6 @@ export function buildLocalBranches(
 ) {
   const formatted: Branch[] = localBranchNames
     .sort((a, b) => a.localeCompare(b, "en", { numeric: true }))
-    .map((name) => makeBranch(name, currentBranchName));
+    .map((name) => createBranch(name, currentBranchName));
   return formatted;
 }
