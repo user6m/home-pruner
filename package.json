@@ -2,15 +2,22 @@
   "name": "home-pruner",
   "version": "0.1.0",
   "description": "An interactive CLI tool to delete local git branches safely.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [],
   "author": "user6m",
   "license": "MIT",
-  "type": "commonjs",
+  "type": "module",
   "bin": {
-    "home-pruners": "src/cli.js"
+    "home-pruner": "dist/cli.js"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "esbuild src/cli.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/cli.js --banner:js=\"#!/usr/bin/env node\"",
+    "dev": "npm run build -- --sourcemap=inline",
+    "prepublishOnly": "npm run typecheck && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.10",
+    "esbuild": "^0.27.2",
+    "typescript": "^5.9.3"
   }
 }
