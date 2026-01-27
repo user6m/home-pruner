@@ -1,8 +1,7 @@
 {
   "name": "home-pruner",
-  "version": "0.1.0",
+  "version": "1.0.0-alpha.1",
   "description": "An interactive CLI tool to delete local git branches safely.",
-  "keywords": [],
   "author": "user6m",
   "license": "MIT",
   "type": "module",
