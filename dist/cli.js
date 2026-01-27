@@ -215,8 +215,10 @@ function render(branchState) {
   builder.push(
     branchState.branches.slice(startIndex, startIndex + visibleRows).map((b) => {
       const name = b.name;
-      if (name === focused?.name) return reverse(name);
-      if (name === currentBranchName) return green(name);
+      const suffix = name === currentBranchName ? "(current)" : "";
+      const context = name + " " + suffix;
+      if (name === focused?.name) return reverse(context);
+      if (name === currentBranchName) return green(context);
       return name;
     }).join(`
 `)
