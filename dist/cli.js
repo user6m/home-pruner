@@ -62,12 +62,23 @@ function printErrorAndSetExitCode(e) {
   }
 }
 
+// src/modules/buildColor.ts
+var RESET = "\x1B[0m";
+function wrap(code) {
+  return (text) => `${code}${text}${RESET}`;
+}
+var red = wrap("\x1B[31m" /* RED */);
+var green = wrap("\x1B[32m" /* GREEN */);
+var gray = wrap("\x1B[90m" /* GRAY */);
+var cyan = wrap("\x1B[36m" /* CYAN */);
+var reverse = wrap("\x1B[7m" /* REVERSE */);
+
 // src/cli.ts
 function main() {
   const { branchList } = prepareBranches();
   let state = initializeState(branchList);
   const { stdin } = prepareStdInOut();
-  printState(state);
+  render(state);
   const onData = (key) => {
     const s = typeof key === "string" ? key : key.toString("utf-8");
     if (s === "" /* CTRL_C */ || s === "q") {
@@ -92,7 +103,7 @@ function main() {
     })();
     if (!action) return;
     state = actionReducer(state, action);
-    printState(state);
+    render(state);
   };
   stdin.on("data", onData);
 }
@@ -190,25 +201,48 @@ function actionReducer(state, action) {
       return state;
   }
 }
-function printState(state) {
+var dict = {
+  banner: `
+=================
+|| home-pruner ||
+=================
+`,
+  currentGitRepo: (name) => `*Current git repository : ${green(name)}
+`,
+  currentBranchNum: (num) => `*Local branches count   : ${green(num)}
+`
+};
+function render(state) {
   const focused = state.branches[state.cursorIndex];
   const selected = getSelectedBranchNames(state);
-  console.log({
-    cursorIndex: state.cursorIndex,
-    focused: focused ? {
-      name: focused.name,
-      isSelectable: focused.isSelectable,
-      isSelected: focused.isSelected,
-      isCurrent: focused.isCurrent
-    } : null,
-    selected
-  });
+  const stdout = process.stdout;
+  const currentGitRepoName = (() => {
+    try {
+      const result = execFileSync("git", ["rev-parse", "--show-toplevel"]);
+      const formatted = result.toString().trim();
+      return formatted;
+    } catch (e) {
+      throw new CliError({
+        code: "GIT_COMMAND_FAILED",
+        userMessage: "Cannnot get git repo name",
+        cause: e
+      });
+    }
+  })();
+  const builder = [];
+  builder.push("\x1B[2J" /* CLEAR_SCREEN */);
+  builder.push("\x1B[H" /* MOVE_CURSOR_HOME */);
+  builder.push(dict.banner);
+  builder.push(dict.currentGitRepo(currentGitRepoName));
+  builder.push(dict.currentBranchNum((state.branches.length ?? 0).toString()));
+  stdout.write(builder.join(""));
 }
 function prepareStdInOut() {
   const stdin = process.stdin;
   const stdout = process.stdout;
   stdout.write("\x1B[?1049h" /* ENTER_ALT_SCREEN */);
   stdout.write("\x1B[?25l" /* HIDE_PIPE */);
+  stdout.write("\x1B[H" /* MOVE_CURSOR_HOME */);
   stdin.setEncoding("utf-8");
   stdin.setRawMode(true);
   return {

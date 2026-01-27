@@ -5,6 +5,7 @@ import { CliError } from "./errors/cli-error";
 import type { Branch } from "./type/branch";
 import { SCREEN_EVENT } from "./const/screenEvent";
 import { KEY_EVENT } from "./const/keyEvent";
+import { green, red } from "./modules/buildColor";
 
 type UIState = {
   branches: Branch[];
@@ -23,7 +24,7 @@ function main() {
   let state = initializeState(branchList);
 
   const { stdin } = prepareStdInOut();
-  printState(state);
+  render(state); // initial render
 
   const onData = (key: Buffer | string) => {
     const s = typeof key === "string" ? key : key.toString("utf-8");
@@ -53,7 +54,7 @@ function main() {
     if (!action) return;
 
     state = actionReducer(state, action);
-    printState(state);
+    render(state); // perform render after each action
   };
 
   stdin.on("data", onData);
@@ -176,22 +177,48 @@ function actionReducer(state: UIState, action: UIAction) {
   }
 }
 
-function printState(state: UIState) {
+const dict = {
+  banner: `
+=================
+|| home-pruner ||
+=================
+`,
+  currentGitRepo: (name: string) =>
+    `*Current git repository : ${green(name)}\n`,
+  currentBranchNum: (num: string) =>
+    `*Local branches count   : ${green(num)}\n`,
+};
+
+function render(state: UIState) {
   const focused = state.branches[state.cursorIndex];
   const selected = getSelectedBranchNames(state);
+  const stdout = process.stdout;
 
-  console.log({
-    cursorIndex: state.cursorIndex,
-    focused: focused
-      ? {
-          name: focused.name,
-          isSelectable: focused.isSelectable,
-          isSelected: focused.isSelected,
-          isCurrent: focused.isCurrent,
-        }
-      : null,
-    selected,
-  });
+  const currentGitRepoName = (() => {
+    try {
+      const result = execFileSync("git", ["rev-parse", "--show-toplevel"]);
+      const formatted = result.toString().trim();
+
+      return formatted;
+    } catch (e) {
+      throw new CliError({
+        code: "GIT_COMMAND_FAILED",
+        userMessage: "Cannnot get git repo name",
+        cause: e,
+      });
+    }
+  })();
+
+  // create texts
+  const builder = [];
+  builder.push(SCREEN_EVENT.CLEAR_SCREEN);
+  builder.push(SCREEN_EVENT.MOVE_CURSOR_HOME);
+  builder.push(dict.banner);
+  builder.push(dict.currentGitRepo(currentGitRepoName));
+  builder.push(dict.currentBranchNum((state.branches.length ?? 0).toString()));
+
+  // output texts
+  stdout.write(builder.join(""));
 }
 
 function prepareStdInOut() {
@@ -200,6 +227,8 @@ function prepareStdInOut() {
 
   stdout.write(SCREEN_EVENT.ENTER_ALT_SCREEN);
   stdout.write(SCREEN_EVENT.HIDE_PIPE);
+
+  stdout.write(SCREEN_EVENT.MOVE_CURSOR_HOME);
 
   stdin.setEncoding("utf-8");
   stdin.setRawMode(true);
