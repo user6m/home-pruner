@@ -1,4 +1,7 @@
-import type { Action, BranchState } from "../main";
+import { execFileSync } from "node:child_process";
+import { CliError } from "../errors/cli-error";
+import { postprocess, type Action, type BranchState } from "../main";
+import { getLocalBranches } from "./getLocalBranches";
 
 export function actionReducer(state: BranchState, action: Action) {
   const { branches, cursorIndex } = state;
@@ -17,9 +20,38 @@ export function actionReducer(state: BranchState, action: Action) {
         : { ...state, cursorIndex: newIndex };
     }
     case "TOGGLE": {
-      const current = branches[cursorIndex];
-      if (!current) return state;
-      if (!current.isSelectable) return state;
+      const targetBranch = branches[cursorIndex];
+      if (!targetBranch) return state;
+      if (!targetBranch.isSelectable) return state;
+
+      // perform delete when selected
+      if (targetBranch.isSelected) {
+        try {
+          execFileSync("git", ["branch", "-d", `${targetBranch.name}`], {
+            stdio: "pipe",
+          });
+
+          // perform postprocess after delete
+          const localBranches = getLocalBranches();
+          const newCursorIndex =
+            localBranches.length === 0
+              ? 0
+              : Math.min(cursorIndex, localBranches.length - 1);
+          return {
+            ...state,
+            branches: localBranches,
+            cursorIndex: newCursorIndex,
+          };
+        } catch (e) {
+          postprocess();
+          throw new CliError({
+            code: "GIT_COMMAND_FAILED",
+            userMessage: "Failed to delete a branch.",
+            cause: e,
+          });
+        }
+      }
+
       const nextBranches = branches.map((b, i) =>
         i === cursorIndex ? { ...b, isSelected: !b.isSelected } : b,
       );

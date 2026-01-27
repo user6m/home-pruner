@@ -17,8 +17,8 @@ const dict = {
 };
 
 export function render(branchState: BranchState) {
-  const focused = branchState.branches[branchState.cursorIndex];
   const stdout = process.stdout;
+  const focused = branchState.branches[branchState.cursorIndex];
   const terminalHeight = stdout.rows;
   const headerHeight = 5;
   const visibleRows = terminalHeight - headerHeight;
@@ -52,6 +52,7 @@ export function render(branchState: BranchState) {
     }
   })();
 
+  // calculate start index
   let startIndex = 0;
   if (focusedIndex >= visibleRows) {
     startIndex = focusedIndex - visibleRows + 1;
@@ -77,7 +78,12 @@ export function render(branchState: BranchState) {
       .slice(startIndex, startIndex + visibleRows)
       .map((b) => {
         const name = b.name;
-        const suffix = name === currentBranchName ? "(current)" : "";
+        const suffix = (() => {
+          const result = [];
+          if (name === currentBranchName) result.push("(current)");
+          if (b.isSelected) result.push("[!!] Press enter to delete...");
+          return result;
+        })();
         const context = name + " " + suffix;
         if (name === focused?.name) return reverse(context);
         if (name === currentBranchName) return green(context);

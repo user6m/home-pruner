@@ -6,7 +6,7 @@ export function createBranch(name: string, CurrntBranchName: string): Branch {
     name,
     isCurrent,
     isSelectable: !isCurrent,
-    isSelected: false, // TODO: make logic later
+    isSelected: false,
   };
 
   return branch;

@@ -30,15 +30,24 @@ function main() {
       return;
     }
 
+    const resetSelection = () => {
+      bracnchState.branches = bracnchState.branches.map((b) => {
+        return { ...b, isSelected: false };
+      });
+    };
+
     let action: Action | null = null;
     action = (() => {
       switch (input) {
         case KEY_EVENT.ARROW_UP:
         case "i":
+          resetSelection();
           return { type: "UP" };
         case KEY_EVENT.ARROW_DOWN:
         case "k":
+          resetSelection();
           return { type: "DOWN" };
+        case KEY_EVENT.ENTER:
         case " ":
           return { type: "TOGGLE" };
         default:
@@ -74,7 +83,7 @@ function preprocess(branchState: BranchState) {
   render(branchState);
 }
 
-function postprocess() {
+export function postprocess() {
   const stdout = process.stdout;
   const stdin = process.stdin;
   const builder = [];

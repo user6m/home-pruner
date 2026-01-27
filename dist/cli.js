@@ -51,7 +51,6 @@ function createBranch(name, CurrntBranchName) {
     isCurrent,
     isSelectable: !isCurrent,
     isSelected: false
-    // TODO: make logic later
   };
   return branch;
 }
@@ -75,6 +74,7 @@ function getLocalBranches() {
     }
   })();
   if (!isGitRepo) {
+    postprocess();
     throw new CliError({
       code: "NOT_GIT_REPO",
       userMessage: "You are not in the git repo."
@@ -86,6 +86,7 @@ function getLocalBranches() {
       const formatted = result.toString().trim();
       return formatted;
     } catch (e) {
+      postprocess();
       throw new CliError({
         code: "GIT_COMMAND_FAILED",
         userMessage: "Cannnot get current branch name.",
@@ -102,6 +103,7 @@ function getLocalBranches() {
       const formatted = result.toString().split("\n").filter(Boolean);
       return formatted;
     } catch (e) {
+      postprocess();
       throw new CliError({
         code: "GIT_COMMAND_FAILED",
         userMessage: "Cannnot get local branches.",
@@ -117,6 +119,7 @@ function getLocalBranches() {
 }
 
 // src/modules/actionReducer.ts
+import { execFileSync as execFileSync2 } from "node:child_process";
 function actionReducer(state, action) {
   const { branches, cursorIndex } = state;
   switch (action.type) {
@@ -130,9 +133,30 @@ function actionReducer(state, action) {
       return newIndex === cursorIndex ? state : { ...state, cursorIndex: newIndex };
     }
     case "TOGGLE": {
-      const current = branches[cursorIndex];
-      if (!current) return state;
-      if (!current.isSelectable) return state;
+      const targetBranch = branches[cursorIndex];
+      if (!targetBranch) return state;
+      if (!targetBranch.isSelectable) return state;
+      if (targetBranch.isSelected) {
+        try {
+          execFileSync2("git", ["branch", "-d", `${targetBranch.name}`], {
+            stdio: "pipe"
+          });
+          const localBranches = getLocalBranches();
+          const newCursorIndex = localBranches.length === 0 ? 0 : Math.min(cursorIndex, localBranches.length - 1);
+          return {
+            ...state,
+            branches: localBranches,
+            cursorIndex: newCursorIndex
+          };
+        } catch (e) {
+          postprocess();
+          throw new CliError({
+            code: "GIT_COMMAND_FAILED",
+            userMessage: "Failed to delete a branch.",
+            cause: e
+          });
+        }
+      }
       const nextBranches = branches.map(
         (b, i) => i === cursorIndex ? { ...b, isSelected: !b.isSelected } : b
       );
@@ -142,7 +166,7 @@ function actionReducer(state, action) {
 }
 
 // src/modules/render.ts
-import { execFileSync as execFileSync2 } from "child_process";
+import { execFileSync as execFileSync3 } from "child_process";
 
 // src/modules/colorWrapper.ts
 var RESET = "\x1B[0m";
@@ -168,15 +192,15 @@ var dict = {
 `
 };
 function render(branchState) {
-  const focused = branchState.branches[branchState.cursorIndex];
   const stdout = process.stdout;
+  const focused = branchState.branches[branchState.cursorIndex];
   const terminalHeight = stdout.rows;
   const headerHeight = 5;
   const visibleRows = terminalHeight - headerHeight;
   const focusedIndex = branchState.cursorIndex;
   const currentGitRepoName = (() => {
     try {
-      const result = execFileSync2("git", ["rev-parse", "--show-toplevel"]);
+      const result = execFileSync3("git", ["rev-parse", "--show-toplevel"]);
       const formatted = result.toString().trim();
       return formatted;
     } catch (e) {
@@ -189,7 +213,7 @@ function render(branchState) {
   })();
   const currentBranchName = (() => {
     try {
-      const result = execFileSync2("git", ["branch", "--show-current"]);
+      const result = execFileSync3("git", ["branch", "--show-current"]);
       const formatted = result.toString().trim();
       return formatted;
     } catch (e) {
@@ -215,7 +239,12 @@ function render(branchState) {
   builder.push(
     branchState.branches.slice(startIndex, startIndex + visibleRows).map((b) => {
       const name = b.name;
-      const suffix = name === currentBranchName ? "(current)" : "";
+      const suffix = (() => {
+        const result = [];
+        if (name === currentBranchName) result.push("(current)");
+        if (b.isSelected) result.push("[!!] Press enter to delete...");
+        return result;
+      })();
       const context = name + " " + suffix;
       if (name === focused?.name) return reverse(context);
       if (name === currentBranchName) return green(context);
@@ -241,15 +270,23 @@ function main() {
       postprocess();
       return;
     }
+    const resetSelection = () => {
+      bracnchState.branches = bracnchState.branches.map((b) => {
+        return { ...b, isSelected: false };
+      });
+    };
     let action = null;
     action = (() => {
       switch (input) {
         case "\x1B[A" /* ARROW_UP */:
         case "i":
+          resetSelection();
           return { type: "UP" };
         case "\x1B[B" /* ARROW_DOWN */:
         case "k":
+          resetSelection();
           return { type: "DOWN" };
+        case "\r" /* ENTER */:
         case " ":
           return { type: "TOGGLE" };
         default:
@@ -290,3 +327,6 @@ try {
 } catch (e) {
   printErrorAndSetExitCode(e);
 }
+export {
+  postprocess
+};

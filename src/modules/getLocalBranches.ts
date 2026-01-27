@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { CliError } from "../errors/cli-error";
 import type { Branch } from "../type/branch";
 import { buildLocalBranches } from "./buildLocalBranches";
+import { postprocess } from "../main";
 
 export function getLocalBranches(): Branch[] {
   const isGitRepo = (() => {
@@ -16,6 +17,7 @@ export function getLocalBranches(): Branch[] {
     }
   })();
   if (!isGitRepo) {
+    postprocess();
     throw new CliError({
       code: "NOT_GIT_REPO",
       userMessage: "You are not in the git repo.",
@@ -29,6 +31,7 @@ export function getLocalBranches(): Branch[] {
 
       return formatted;
     } catch (e) {
+      postprocess();
       throw new CliError({
         code: "GIT_COMMAND_FAILED",
         userMessage: "Cannnot get current branch name.",
@@ -47,6 +50,7 @@ export function getLocalBranches(): Branch[] {
 
       return formatted;
     } catch (e) {
+      postprocess();
       throw new CliError({
         code: "GIT_COMMAND_FAILED",
         userMessage: "Cannnot get local branches.",
