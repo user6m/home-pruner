@@ -64,21 +64,37 @@ function printErrorAndSetExitCode(e) {
 
 // src/cli.ts
 function main() {
-  const {
-    currentBranchName: _currentBranchName,
-    localBranchNames: _localBranchNames,
-    branchList
-  } = prepareBranches();
-  const state = initializeState(branchList);
-  console.log("Initial State:", state);
-  const secondState = actionReducer(state, { type: "DOWN" });
-  console.log("Second state:", secondState);
-  const thirdState = actionReducer(state, { type: "UP" });
-  console.log("Third state:", thirdState);
-  const fourthState = actionReducer(state, { type: "TOGGLE" });
-  console.log("Fouth state:", fourthState);
-  const fifthState = actionReducer(state, { type: "TOGGLE" });
-  console.log("Fifth state:", fifthState);
+  const { branchList } = prepareBranches();
+  let state = initializeState(branchList);
+  const { stdin } = prepareStdInOut();
+  printState(state);
+  const onData = (key) => {
+    const s = typeof key === "string" ? key : key.toString("utf-8");
+    if (s === "" /* CTRL_C */ || s === "q") {
+      stdin.off("data", onData);
+      cleanup();
+      return;
+    }
+    let action = null;
+    action = (() => {
+      switch (s) {
+        case "\x1B[A" /* ARROW_UP */:
+        case "i":
+          return { type: "UP" };
+        case "\x1B[B" /* ARROW_DOWN */:
+        case "k":
+          return { type: "DOWN" };
+        case " ":
+          return { type: "TOGGLE" };
+        default:
+          return null;
+      }
+    })();
+    if (!action) return;
+    state = actionReducer(state, action);
+    printState(state);
+  };
+  stdin.on("data", onData);
 }
 function prepareBranches() {
   const isGitRepo = (() => {
@@ -142,17 +158,20 @@ function initializeState(branches) {
     cursorIndex: 0
   };
 }
+function getSelectedBranchNames(state) {
+  return state.branches.filter((b) => b.isSelected).map((b) => b.name);
+}
 function actionReducer(state, action) {
   const { branches, cursorIndex } = state;
   switch (action.type) {
     case "UP": {
-      const next = Math.max(0, cursorIndex - 1);
-      return next === cursorIndex ? state : { ...state, cursorIndex: next };
+      const newIndex = Math.max(0, cursorIndex - 1);
+      return newIndex === cursorIndex ? state : { ...state, cursorIndex: newIndex };
     }
     case "DOWN": {
-      const last = Math.max(0, branches.length - 1);
-      const next = Math.min(last, cursorIndex + 1);
-      return next === cursorIndex ? state : { ...state, cursorIndex: next };
+      const lastIndex = Math.max(0, branches.length - 1);
+      const newIndex = Math.min(lastIndex, cursorIndex + 1);
+      return newIndex === cursorIndex ? state : { ...state, cursorIndex: newIndex };
     }
     case "TOGGLE": {
       const current = branches[cursorIndex];
@@ -163,6 +182,50 @@ function actionReducer(state, action) {
       );
       return { ...state, branches: nextBranches };
     }
+    case "QUIT":
+      process.stdin.off("data", actionReducer);
+      cleanup();
+      return state;
+    case "INVALID":
+      return state;
+  }
+}
+function printState(state) {
+  const focused = state.branches[state.cursorIndex];
+  const selected = getSelectedBranchNames(state);
+  console.log({
+    cursorIndex: state.cursorIndex,
+    focused: focused ? {
+      name: focused.name,
+      isSelectable: focused.isSelectable,
+      isSelected: focused.isSelected,
+      isCurrent: focused.isCurrent
+    } : null,
+    selected
+  });
+}
+function prepareStdInOut() {
+  const stdin = process.stdin;
+  const stdout = process.stdout;
+  stdout.write("\x1B[?1049h" /* ENTER_ALT_SCREEN */);
+  stdout.write("\x1B[?25l" /* HIDE_PIPE */);
+  stdin.setEncoding("utf-8");
+  stdin.setRawMode(true);
+  return {
+    stdin,
+    stdout
+  };
+}
+function cleanup() {
+  const stdout = process.stdout;
+  const stdin = process.stdin;
+  try {
+    stdout.write("\x1B[?1049l" /* EXIT_ALT_SCREEN */);
+    stdout.write("\x1B[?25h" /* SHOW_PIPE */);
+    stdout.write("\n");
+  } finally {
+    if (stdin.isRaw) stdin.setRawMode(false);
+    stdin.pause();
   }
 }
 try {

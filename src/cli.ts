@@ -3,39 +3,60 @@ import { execFileSync } from "node:child_process";
 import { printErrorAndSetExitCode } from "./modules/printErrorAndSetExitCode";
 import { CliError } from "./errors/cli-error";
 import type { Branch } from "./type/branch";
+import { SCREEN_EVENT } from "./const/screenEvent";
 import { KEY_EVENT } from "./const/keyEvent";
-import type { MOUSE_EVENT } from "./const/mouseEvent";
 
 type UIState = {
   branches: Branch[];
   cursorIndex: number;
 };
 
-type UIAction = {
-  type: "UP" | "DOWN" | "TOGGLE";
-};
+type UIAction =
+  | { type: "UP" }
+  | { type: "DOWN" }
+  | { type: "TOGGLE" }
+  | { type: "QUIT" }
+  | { type: "INVALID" };
 
 function main() {
-  const {
-    currentBranchName: _currentBranchName,
-    localBranchNames: _localBranchNames,
-    branchList,
-  } = prepareBranches();
+  const { branchList } = prepareBranches();
+  let state = initializeState(branchList);
 
-  const state = initializeState(branchList);
-  console.log("Initial State:", state);
+  const { stdin } = prepareStdInOut();
+  printState(state);
 
-  const secondState = actionReducer(state, { type: "DOWN" });
-  console.log("Second state:", secondState);
+  const onData = (key: Buffer | string) => {
+    const s = typeof key === "string" ? key : key.toString("utf-8");
 
-  const thirdState = actionReducer(state, { type: "UP" });
-  console.log("Third state:", thirdState);
+    if (s === KEY_EVENT.CTRL_C || s === "q") {
+      stdin.off("data", onData);
+      cleanup();
+      return;
+    }
 
-  const fourthState = actionReducer(state, { type: "TOGGLE" });
-  console.log("Fouth state:", fourthState);
+    let action: UIAction | null = null;
+    action = (() => {
+      switch (s) {
+        case KEY_EVENT.ARROW_UP:
+        case "i":
+          return { type: "UP" };
+        case KEY_EVENT.ARROW_DOWN:
+        case "k":
+          return { type: "DOWN" };
+        case " ":
+          return { type: "TOGGLE" };
+        default:
+          return null;
+      }
+    })();
 
-  const fifthState = actionReducer(state, { type: "TOGGLE" });
-  console.log("Fifth state:", fifthState);
+    if (!action) return;
+
+    state = actionReducer(state, action);
+    printState(state);
+  };
+
+  stdin.on("data", onData);
 }
 
 function prepareBranches() {
@@ -118,14 +139,18 @@ function actionReducer(state: UIState, action: UIAction) {
 
   switch (action.type) {
     case "UP": {
-      const next = Math.max(0, cursorIndex - 1);
-      return next === cursorIndex ? state : { ...state, cursorIndex: next };
+      const newIndex = Math.max(0, cursorIndex - 1);
+      return newIndex === cursorIndex
+        ? state
+        : { ...state, cursorIndex: newIndex };
     }
 
     case "DOWN": {
-      const last = Math.max(0, branches.length - 1);
-      const next = Math.min(last, cursorIndex + 1);
-      return next === cursorIndex ? state : { ...state, cursorIndex: next };
+      const lastIndex = Math.max(0, branches.length - 1);
+      const newIndex = Math.min(lastIndex, cursorIndex + 1);
+      return newIndex === cursorIndex
+        ? state
+        : { ...state, cursorIndex: newIndex };
     }
 
     case "TOGGLE": {
@@ -140,6 +165,62 @@ function actionReducer(state: UIState, action: UIAction) {
 
       return { ...state, branches: nextBranches };
     }
+
+    case "QUIT":
+      process.stdin.off("data", actionReducer);
+      cleanup();
+      return state;
+
+    case "INVALID":
+      return state;
+  }
+}
+
+function printState(state: UIState) {
+  const focused = state.branches[state.cursorIndex];
+  const selected = getSelectedBranchNames(state);
+
+  console.log({
+    cursorIndex: state.cursorIndex,
+    focused: focused
+      ? {
+          name: focused.name,
+          isSelectable: focused.isSelectable,
+          isSelected: focused.isSelected,
+          isCurrent: focused.isCurrent,
+        }
+      : null,
+    selected,
+  });
+}
+
+function prepareStdInOut() {
+  const stdin = process.stdin;
+  const stdout = process.stdout;
+
+  stdout.write(SCREEN_EVENT.ENTER_ALT_SCREEN);
+  stdout.write(SCREEN_EVENT.HIDE_PIPE);
+
+  stdin.setEncoding("utf-8");
+  stdin.setRawMode(true);
+
+  return {
+    stdin,
+    stdout,
+  };
+}
+
+function cleanup() {
+  const stdout = process.stdout;
+  const stdin = process.stdin;
+
+  try {
+    stdout.write(SCREEN_EVENT.EXIT_ALT_SCREEN);
+    stdout.write(SCREEN_EVENT.SHOW_PIPE);
+    stdout.write("\n");
+  } finally {
+    if (stdin.isRaw) stdin.setRawMode(false);
+    stdin.pause();
   }
 }
 

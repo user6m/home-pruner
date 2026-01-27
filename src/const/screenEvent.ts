@@ -5,4 +5,6 @@ export enum SCREEN_EVENT {
   MOVE_CURSOR_HOME = "\x1b[H",
   INVERT_COLORS = "\x1b[7m",
   RESET_COLORS = "\x1b[0m",
+  ENTER_ALT_SCREEN = "\x1b[?1049h",
+  EXIT_ALT_SCREEN = "\x1b[?1049l",
 }
