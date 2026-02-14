@@ -5,6 +5,10 @@ import { getLocalBranches } from "./getLocalBranches";
 import type { Action } from "../main";
 import type { BranchState } from "../type/branchState";
 
+interface ExecError extends Error {
+  stderr: Buffer;
+}
+
 export function actionReducer(state: BranchState, action: Action): BranchState {
   const { branches, cursorIndex } = state;
   switch (action.type) {
@@ -50,8 +54,8 @@ export function actionReducer(state: BranchState, action: Action): BranchState {
           };
         } catch (e) {
           const detail =
-            e instanceof Error && (e as any).stderr
-              ? (e as any).stderr.toString().trim()
+            e instanceof Error && "stderr" in e
+              ? (e as ExecError).stderr.toString().trim()
               : e instanceof Error
                 ? e.message
                 : String(e);
@@ -99,8 +103,8 @@ export function actionReducer(state: BranchState, action: Action): BranchState {
         };
       } catch (e) {
         const detail =
-          e instanceof Error && (e as any).stderr
-            ? (e as any).stderr.toString().trim()
+          e instanceof Error && "stderr" in e
+            ? (e as ExecError).stderr.toString().trim()
             : e instanceof Error
               ? e.message
               : String(e);
