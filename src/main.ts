@@ -65,7 +65,6 @@ function main() {
           resetSelection();
           return { type: "DOWN" };
         case KEY_EVENT.ENTER:
-        case " ":
           return { type: "TOGGLE" };
         default:
           resetSelection();

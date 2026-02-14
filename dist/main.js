@@ -143,9 +143,9 @@ var reverse = wrap("\x1B[7m" /* REVERSE */);
 
 // src/const/dict.ts
 var dict = {
-  banner: `=================
-|| home-pruner ||
-=================
+  banner: `${green("=================")}
+${green("|| home-pruner ||")}
+${green("=================")}
 `,
   currentGitRepo: (name) => `*Current git repository : ${green(name)}
 `,
@@ -171,14 +171,14 @@ var loadConfig = () => {
   try {
     const data = readFileSync(CONFIG_FILE_PATH, "utf-8");
     return { ...DEFAULT_CONFIG, ...JSON.parse(data) };
-  } catch (e) {
+  } catch {
     return DEFAULT_CONFIG;
   }
 };
 var saveConfig = (config) => {
   try {
     writeFileSync(CONFIG_FILE_PATH, JSON.stringify(config, null, 2));
-  } catch (e) {
+  } catch {
   }
 };
 
@@ -217,7 +217,7 @@ function actionReducer(state, action) {
             }
           };
         } catch (e) {
-          const detail = e instanceof Error && e.stderr ? e.stderr.toString().trim() : e instanceof Error ? e.message : String(e);
+          const detail = e instanceof Error && "stderr" in e ? e.stderr.toString().trim() : e instanceof Error ? e.message : String(e);
           const nextBranches2 = branches.map(
             (b, i) => i === cursorIndex ? { ...b, isSelected: false } : b
           );
@@ -255,7 +255,7 @@ function actionReducer(state, action) {
           }
         };
       } catch (e) {
-        const detail = e instanceof Error && e.stderr ? e.stderr.toString().trim() : e instanceof Error ? e.message : String(e);
+        const detail = e instanceof Error && "stderr" in e ? e.stderr.toString().trim() : e instanceof Error ? e.message : String(e);
         return {
           ...state,
           message: {
@@ -393,7 +393,6 @@ function main() {
           resetSelection();
           return { type: "DOWN" };
         case "\r" /* ENTER */:
-        case " ":
           return { type: "TOGGLE" };
         default:
           resetSelection();

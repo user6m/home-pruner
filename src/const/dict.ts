@@ -1,10 +1,7 @@
 import { green, reverse } from "../modules/colorWrapper";
 
 export const dict = {
-  banner: `=================
-|| home-pruner ||
-=================
-`,
+  banner: `${green("=================")}\n${green("|| home-pruner ||")}\n${green("=================")}\n`,
   currentGitRepo: (name: string) =>
     `*Current git repository : ${green(name)}\n`,
   currentBranchNum: (num: string) =>
