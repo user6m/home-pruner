@@ -178,7 +178,31 @@ function actionReducer(state, action) {
       );
       return { ...state, branches: nextBranches, errorMessage: void 0 };
     }
+    case "FORCE_DELETE": {
+      const targetBranch = branches[cursorIndex];
+      if (!targetBranch || !targetBranch.isSelected) return state;
+      try {
+        execFileSync2("git", ["branch", "-D", `${targetBranch.name}`], {
+          stdio: "pipe"
+        });
+        const localBranches = getLocalBranches();
+        const newCursorIndex = localBranches.length === 0 ? 0 : Math.min(cursorIndex, localBranches.length - 1);
+        return {
+          ...state,
+          branches: localBranches,
+          cursorIndex: newCursorIndex,
+          errorMessage: void 0
+        };
+      } catch (e) {
+        const detail = e instanceof Error && e.stderr ? e.stderr.toString().trim() : e instanceof Error ? e.message : String(e);
+        return {
+          ...state,
+          errorMessage: `Failed to force delete branch. ${detail}`
+        };
+      }
+    }
   }
+  return state;
 }
 
 // src/modules/render.ts
@@ -258,7 +282,8 @@ function render(branchState) {
       const suffix = (() => {
         const result = [];
         if (name === currentBranchName) result.push("(current)");
-        if (b.isSelected) result.push("[!!] Press enter to delete...");
+        if (b.isSelected)
+          result.push("[!!] Press [Enter] to delete, [f] to force delete");
         return result;
       })();
       const context = name + " " + suffix;
@@ -309,6 +334,8 @@ function main() {
         case "\r" /* ENTER */:
         case " ":
           return { type: "TOGGLE" };
+        case "f":
+          return { type: "FORCE_DELETE" };
         default:
           resetSelection();
           return null;

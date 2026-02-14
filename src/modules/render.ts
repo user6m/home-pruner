@@ -81,7 +81,8 @@ export function render(branchState: BranchState) {
         const suffix = (() => {
           const result = [];
           if (name === currentBranchName) result.push("(current)");
-          if (b.isSelected) result.push("[!!] Press enter to delete...");
+          if (b.isSelected)
+            result.push("[!!] Press [Enter] to delete, [f] to force delete");
           return result;
         })();
         const context = name + " " + suffix;

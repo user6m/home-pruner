@@ -3,7 +3,7 @@ import { getLocalBranches } from "./getLocalBranches";
 import type { Action } from "../main";
 import type { BranchState } from "../type/branchState";
 
-export function actionReducer(state: BranchState, action: Action) {
+export function actionReducer(state: BranchState, action: Action): BranchState {
   const { branches, cursorIndex } = state;
   switch (action.type) {
     case "UP": {
@@ -66,5 +66,40 @@ export function actionReducer(state: BranchState, action: Action) {
       );
       return { ...state, branches: nextBranches, errorMessage: undefined };
     }
+    case "FORCE_DELETE": {
+      const targetBranch = branches[cursorIndex];
+      if (!targetBranch || !targetBranch.isSelected) return state;
+
+      try {
+        execFileSync("git", ["branch", "-D", `${targetBranch.name}`], {
+          stdio: "pipe",
+        });
+
+        const localBranches = getLocalBranches();
+        const newCursorIndex =
+          localBranches.length === 0
+            ? 0
+            : Math.min(cursorIndex, localBranches.length - 1);
+        return {
+          ...state,
+          branches: localBranches,
+          cursorIndex: newCursorIndex,
+          errorMessage: undefined,
+        };
+      } catch (e) {
+        const detail =
+          e instanceof Error && (e as any).stderr
+            ? (e as any).stderr.toString().trim()
+            : e instanceof Error
+              ? e.message
+              : String(e);
+        return {
+          ...state,
+          errorMessage: `Failed to force delete branch. ${detail}`,
+        };
+      }
+    }
   }
+
+  return state;
 }

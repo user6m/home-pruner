@@ -8,7 +8,11 @@ import { render } from "./modules/render";
 import { postprocess } from "./modules/postprocess";
 import type { BranchState } from "./type/branchState";
 
-export type Action = { type: "UP" } | { type: "DOWN" } | { type: "TOGGLE" };
+export type Action =
+  | { type: "UP" }
+  | { type: "DOWN" }
+  | { type: "TOGGLE" }
+  | { type: "FORCE_DELETE" };
 
 function main() {
   const stdin = process.stdin;
@@ -46,6 +50,8 @@ function main() {
         case KEY_EVENT.ENTER:
         case " ":
           return { type: "TOGGLE" };
+        case "f":
+          return { type: "FORCE_DELETE" };
         default:
           resetSelection();
           return null;
