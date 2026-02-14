@@ -137,12 +137,12 @@ function actionReducer(state, action) {
   switch (action.type) {
     case "UP": {
       const newIndex = Math.max(0, cursorIndex - 1);
-      return newIndex === cursorIndex ? state : { ...state, cursorIndex: newIndex };
+      return newIndex === cursorIndex ? { ...state, errorMessage: void 0 } : { ...state, cursorIndex: newIndex, errorMessage: void 0 };
     }
     case "DOWN": {
       const lastIndex = Math.max(0, branches.length - 1);
       const newIndex = Math.min(lastIndex, cursorIndex + 1);
-      return newIndex === cursorIndex ? state : { ...state, cursorIndex: newIndex };
+      return newIndex === cursorIndex ? { ...state, errorMessage: void 0 } : { ...state, cursorIndex: newIndex, errorMessage: void 0 };
     }
     case "TOGGLE": {
       const targetBranch = branches[cursorIndex];
@@ -158,21 +158,25 @@ function actionReducer(state, action) {
           return {
             ...state,
             branches: localBranches,
-            cursorIndex: newCursorIndex
+            cursorIndex: newCursorIndex,
+            errorMessage: void 0
           };
         } catch (e) {
-          postprocess();
-          throw new CliError({
-            code: "GIT_COMMAND_FAILED",
-            userMessage: "Failed to delete a branch.",
-            cause: e
-          });
+          const detail = e instanceof Error && e.stderr ? e.stderr.toString().trim() : e instanceof Error ? e.message : String(e);
+          const nextBranches2 = branches.map(
+            (b, i) => i === cursorIndex ? { ...b, isSelected: false } : b
+          );
+          return {
+            ...state,
+            branches: nextBranches2,
+            errorMessage: `Failed to delete branch. ${detail}`
+          };
         }
       }
       const nextBranches = branches.map(
         (b, i) => i === cursorIndex ? { ...b, isSelected: !b.isSelected } : b
       );
-      return { ...state, branches: nextBranches };
+      return { ...state, branches: nextBranches, errorMessage: void 0 };
     }
   }
 }
@@ -264,6 +268,11 @@ function render(branchState) {
     }).join(`
 `)
   );
+  if (branchState.errorMessage) {
+    builder.push(`
+
+${red(branchState.errorMessage)}`);
+  }
   stdout.write(builder.join(""));
 }
 
@@ -271,7 +280,7 @@ function render(branchState) {
 function main() {
   const stdin = process.stdin;
   const branches = getLocalBranches();
-  let bracnchState = {
+  let branchState = {
     branches,
     cursorIndex: 0
   };
@@ -283,7 +292,7 @@ function main() {
       return;
     }
     const resetSelection = () => {
-      bracnchState.branches = bracnchState.branches.map((b) => {
+      branchState.branches = branchState.branches.map((b) => {
         return { ...b, isSelected: false };
       });
     };
@@ -306,10 +315,10 @@ function main() {
       }
     })();
     if (!action) return;
-    bracnchState = actionReducer(bracnchState, action);
-    render(bracnchState);
+    branchState = actionReducer(branchState, action);
+    render(branchState);
   };
-  preprocess(bracnchState);
+  preprocess(branchState);
   stdin.on("data", onData);
 }
 function preprocess(branchState) {

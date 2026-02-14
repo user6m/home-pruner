@@ -23,7 +23,8 @@
     "dev": "pnpm run build -- --sourcemap=inline",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "prepublishOnly": "pnpm run typecheck && pnpm run build"
+    "prepublishOnly": "pnpm run typecheck && pnpm run build",
+    "test:create-unmerged": "./scripts/create-unmerged-branch.sh"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

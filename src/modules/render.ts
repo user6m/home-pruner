@@ -2,7 +2,7 @@ import { execFileSync } from "child_process";
 import type { BranchState } from "../type/branchState";
 import { SCREEN_EVENT } from "../const/screenEvent";
 import { CliError } from "../errors/cli-error";
-import { green, reverse } from "./colorWrapper";
+import { green, reverse, red } from "./colorWrapper";
 
 const dict = {
   banner: `
@@ -91,6 +91,11 @@ export function render(branchState: BranchState) {
       })
       .join(`\n`),
   );
+
+  // errorMessage
+  if (branchState.errorMessage) {
+    builder.push(`\n\n${red(branchState.errorMessage)}`);
+  }
 
   // output texts
   stdout.write(builder.join(""));

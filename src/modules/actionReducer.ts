@@ -1,6 +1,4 @@
 import { execFileSync } from "node:child_process";
-import { CliError } from "../errors/cli-error";
-import { postprocess } from "../modules/postprocess";
 import { getLocalBranches } from "./getLocalBranches";
 import type { Action } from "../main";
 import type { BranchState } from "../type/branchState";
@@ -11,15 +9,15 @@ export function actionReducer(state: BranchState, action: Action) {
     case "UP": {
       const newIndex = Math.max(0, cursorIndex - 1);
       return newIndex === cursorIndex
-        ? state
-        : { ...state, cursorIndex: newIndex };
+        ? { ...state, errorMessage: undefined }
+        : { ...state, cursorIndex: newIndex, errorMessage: undefined };
     }
     case "DOWN": {
       const lastIndex = Math.max(0, branches.length - 1);
       const newIndex = Math.min(lastIndex, cursorIndex + 1);
       return newIndex === cursorIndex
-        ? state
-        : { ...state, cursorIndex: newIndex };
+        ? { ...state, errorMessage: undefined }
+        : { ...state, cursorIndex: newIndex, errorMessage: undefined };
     }
     case "TOGGLE": {
       const targetBranch = branches[cursorIndex];
@@ -43,21 +41,30 @@ export function actionReducer(state: BranchState, action: Action) {
             ...state,
             branches: localBranches,
             cursorIndex: newCursorIndex,
+            errorMessage: undefined,
           };
         } catch (e) {
-          postprocess();
-          throw new CliError({
-            code: "GIT_COMMAND_FAILED",
-            userMessage: "Failed to delete a branch.",
-            cause: e,
-          });
+          const detail =
+            e instanceof Error && (e as any).stderr
+              ? (e as any).stderr.toString().trim()
+              : e instanceof Error
+                ? e.message
+                : String(e);
+          const nextBranches = branches.map((b, i) =>
+            i === cursorIndex ? { ...b, isSelected: false } : b,
+          );
+          return {
+            ...state,
+            branches: nextBranches,
+            errorMessage: `Failed to delete branch. ${detail}`,
+          };
         }
       }
 
       const nextBranches = branches.map((b, i) =>
         i === cursorIndex ? { ...b, isSelected: !b.isSelected } : b,
       );
-      return { ...state, branches: nextBranches };
+      return { ...state, branches: nextBranches, errorMessage: undefined };
     }
   }
 }

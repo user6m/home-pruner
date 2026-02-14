@@ -1,4 +1,3 @@
-// src/errors/cli-error.ts
 export type CliErrorCode = "NOT_GIT_REPO" | "GIT_COMMAND_FAILED" | "UNKNOWN";
 
 type CliErrorOptions = {
