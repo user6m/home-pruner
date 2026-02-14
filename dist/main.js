@@ -143,8 +143,7 @@ var reverse = wrap("\x1B[7m" /* REVERSE */);
 
 // src/const/dict.ts
 var dict = {
-  banner: `
-=================
+  banner: `=================
 || home-pruner ||
 =================
 `,

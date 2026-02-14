@@ -1,8 +1,7 @@
 import { green } from "../modules/colorWrapper";
 
 export const dict = {
-  banner: `
-=================
+  banner: `=================
 || home-pruner ||
 =================
 `,
