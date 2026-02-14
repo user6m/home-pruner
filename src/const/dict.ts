@@ -1,4 +1,4 @@
-import { green } from "../modules/colorWrapper";
+import { green, reverse } from "../modules/colorWrapper";
 
 export const dict = {
   banner: `=================
@@ -9,7 +9,8 @@ export const dict = {
     `*Current git repository : ${green(name)}\n`,
   currentBranchNum: (num: string) =>
     `*Local branches count   : ${green(num)}\n`,
-  instruction: "[!!] Press [Enter] to delete, [f] to force delete",
+  deletionPending: "[Pending] Press Enter to delete(or f to force delete)",
+  keyGuide: `\n${reverse("^C")} Quit  ${reverse("Enter")} Toggle/Delete  ${reverse("f")} Force Delete  ${reverse("t")} Toggle Banner`,
   deletedBranch: (name: string) => `Deleted branch: ${name}`,
   failedToDelete: (detail: string) => `Failed to delete branch. ${detail}`,
   failedToForceDelete: (detail: string) =>

@@ -151,7 +151,9 @@ var dict = {
 `,
   currentBranchNum: (num) => `*Local branches count   : ${green(num)}
 `,
-  instruction: "[!!] Press [Enter] to delete, [f] to force delete",
+  deletionPending: "[Pending] Press Enter to delete(or f to force delete)",
+  keyGuide: `
+${reverse("^C")} Quit  ${reverse("Enter")} Toggle/Delete  ${reverse("f")} Force Delete  ${reverse("t")} Toggle Banner`,
   deletedBranch: (name) => `Deleted branch: ${name}`,
   failedToDelete: (detail) => `Failed to delete branch. ${detail}`,
   failedToForceDelete: (detail) => `Failed to force delete branch. ${detail}`
@@ -327,7 +329,7 @@ function render(branchState) {
       const suffix = (() => {
         const result = [];
         if (name === currentBranchName) result.push("(current)");
-        if (b.isSelected) result.push(dict.instruction);
+        if (b.isSelected) result.push(dict.deletionPending);
         return result;
       })();
       const context = name + " " + suffix;
@@ -345,6 +347,7 @@ ${branchState.message.text}`;
       branchState.message.type === "error" ? red(text) : green(text)
     );
   }
+  builder.push(dict.keyGuide);
   stdout.write(builder.join(""));
 }
 

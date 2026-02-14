@@ -73,7 +73,7 @@ export function render(branchState: BranchState) {
         const suffix = (() => {
           const result = [];
           if (name === currentBranchName) result.push("(current)");
-          if (b.isSelected) result.push(dict.instruction);
+          if (b.isSelected) result.push(dict.deletionPending);
           return result;
         })();
         const context = name + " " + suffix;
@@ -91,6 +91,9 @@ export function render(branchState: BranchState) {
       branchState.message.type === "error" ? red(text) : green(text),
     );
   }
+
+  // key guide
+  builder.push(dict.keyGuide);
 
   // output texts
   stdout.write(builder.join(""));
