@@ -130,6 +130,34 @@ function getLocalBranches() {
   return branchList;
 }
 
+// src/modules/colorWrapper.ts
+var RESET = "\x1B[0m";
+function wrap(code) {
+  return (text) => `${code}${text}${RESET}`;
+}
+var red = wrap("\x1B[31m" /* RED */);
+var green = wrap("\x1B[32m" /* GREEN */);
+var gray = wrap("\x1B[90m" /* GRAY */);
+var cyan = wrap("\x1B[36m" /* CYAN */);
+var reverse = wrap("\x1B[7m" /* REVERSE */);
+
+// src/const/dict.ts
+var dict = {
+  banner: `
+=================
+|| home-pruner ||
+=================
+`,
+  currentGitRepo: (name) => `*Current git repository : ${green(name)}
+`,
+  currentBranchNum: (num) => `*Local branches count   : ${green(num)}
+`,
+  instruction: "[!!] Press [Enter] to delete, [f] to force delete",
+  deletedBranch: (name) => `Deleted branch: ${name}`,
+  failedToDelete: (detail) => `Failed to delete branch. ${detail}`,
+  failedToForceDelete: (detail) => `Failed to force delete branch. ${detail}`
+};
+
 // src/modules/actionReducer.ts
 import { execFileSync as execFileSync2 } from "node:child_process";
 function actionReducer(state, action) {
@@ -137,12 +165,12 @@ function actionReducer(state, action) {
   switch (action.type) {
     case "UP": {
       const newIndex = Math.max(0, cursorIndex - 1);
-      return newIndex === cursorIndex ? { ...state, errorMessage: void 0 } : { ...state, cursorIndex: newIndex, errorMessage: void 0 };
+      return newIndex === cursorIndex ? { ...state, message: void 0 } : { ...state, cursorIndex: newIndex, message: void 0 };
     }
     case "DOWN": {
       const lastIndex = Math.max(0, branches.length - 1);
       const newIndex = Math.min(lastIndex, cursorIndex + 1);
-      return newIndex === cursorIndex ? { ...state, errorMessage: void 0 } : { ...state, cursorIndex: newIndex, errorMessage: void 0 };
+      return newIndex === cursorIndex ? { ...state, message: void 0 } : { ...state, cursorIndex: newIndex, message: void 0 };
     }
     case "TOGGLE": {
       const targetBranch = branches[cursorIndex];
@@ -159,7 +187,10 @@ function actionReducer(state, action) {
             ...state,
             branches: localBranches,
             cursorIndex: newCursorIndex,
-            errorMessage: void 0
+            message: {
+              type: "success",
+              text: dict.deletedBranch(targetBranch.name)
+            }
           };
         } catch (e) {
           const detail = e instanceof Error && e.stderr ? e.stderr.toString().trim() : e instanceof Error ? e.message : String(e);
@@ -169,14 +200,17 @@ function actionReducer(state, action) {
           return {
             ...state,
             branches: nextBranches2,
-            errorMessage: `Failed to delete branch. ${detail}`
+            message: {
+              type: "error",
+              text: dict.failedToDelete(detail)
+            }
           };
         }
       }
       const nextBranches = branches.map(
         (b, i) => i === cursorIndex ? { ...b, isSelected: !b.isSelected } : b
       );
-      return { ...state, branches: nextBranches, errorMessage: void 0 };
+      return { ...state, branches: nextBranches, message: void 0 };
     }
     case "FORCE_DELETE": {
       const targetBranch = branches[cursorIndex];
@@ -191,13 +225,19 @@ function actionReducer(state, action) {
           ...state,
           branches: localBranches,
           cursorIndex: newCursorIndex,
-          errorMessage: void 0
+          message: {
+            type: "success",
+            text: dict.deletedBranch(targetBranch.name)
+          }
         };
       } catch (e) {
         const detail = e instanceof Error && e.stderr ? e.stderr.toString().trim() : e instanceof Error ? e.message : String(e);
         return {
           ...state,
-          errorMessage: `Failed to force delete branch. ${detail}`
+          message: {
+            type: "error",
+            text: dict.failedToForceDelete(detail)
+          }
         };
       }
     }
@@ -207,30 +247,6 @@ function actionReducer(state, action) {
 
 // src/modules/render.ts
 import { execFileSync as execFileSync3 } from "child_process";
-
-// src/modules/colorWrapper.ts
-var RESET = "\x1B[0m";
-function wrap(code) {
-  return (text) => `${code}${text}${RESET}`;
-}
-var red = wrap("\x1B[31m" /* RED */);
-var green = wrap("\x1B[32m" /* GREEN */);
-var gray = wrap("\x1B[90m" /* GRAY */);
-var cyan = wrap("\x1B[36m" /* CYAN */);
-var reverse = wrap("\x1B[7m" /* REVERSE */);
-
-// src/modules/render.ts
-var dict = {
-  banner: `
-=================
-|| home-pruner ||
-=================
-`,
-  currentGitRepo: (name) => `*Current git repository : ${green(name)}
-`,
-  currentBranchNum: (num) => `*Local branches count   : ${green(num)}
-`
-};
 function render(branchState) {
   const stdout = process.stdout;
   const focused = branchState.branches[branchState.cursorIndex];
@@ -282,8 +298,7 @@ function render(branchState) {
       const suffix = (() => {
         const result = [];
         if (name === currentBranchName) result.push("(current)");
-        if (b.isSelected)
-          result.push("[!!] Press [Enter] to delete, [f] to force delete");
+        if (b.isSelected) result.push(dict.instruction);
         return result;
       })();
       const context = name + " " + suffix;
@@ -293,10 +308,13 @@ function render(branchState) {
     }).join(`
 `)
   );
-  if (branchState.errorMessage) {
-    builder.push(`
+  if (branchState.message) {
+    const text = `
 
-${red(branchState.errorMessage)}`);
+${branchState.message.text}`;
+    builder.push(
+      branchState.message.type === "error" ? red(text) : green(text)
+    );
   }
   stdout.write(builder.join(""));
 }

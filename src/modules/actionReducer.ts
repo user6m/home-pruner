@@ -1,3 +1,4 @@
+import { dict } from "../const/dict";
 import { execFileSync } from "node:child_process";
 import { getLocalBranches } from "./getLocalBranches";
 import type { Action } from "../main";
@@ -9,15 +10,15 @@ export function actionReducer(state: BranchState, action: Action): BranchState {
     case "UP": {
       const newIndex = Math.max(0, cursorIndex - 1);
       return newIndex === cursorIndex
-        ? { ...state, errorMessage: undefined }
-        : { ...state, cursorIndex: newIndex, errorMessage: undefined };
+        ? { ...state, message: undefined }
+        : { ...state, cursorIndex: newIndex, message: undefined };
     }
     case "DOWN": {
       const lastIndex = Math.max(0, branches.length - 1);
       const newIndex = Math.min(lastIndex, cursorIndex + 1);
       return newIndex === cursorIndex
-        ? { ...state, errorMessage: undefined }
-        : { ...state, cursorIndex: newIndex, errorMessage: undefined };
+        ? { ...state, message: undefined }
+        : { ...state, cursorIndex: newIndex, message: undefined };
     }
     case "TOGGLE": {
       const targetBranch = branches[cursorIndex];
@@ -41,7 +42,10 @@ export function actionReducer(state: BranchState, action: Action): BranchState {
             ...state,
             branches: localBranches,
             cursorIndex: newCursorIndex,
-            errorMessage: undefined,
+            message: {
+              type: "success",
+              text: dict.deletedBranch(targetBranch.name),
+            },
           };
         } catch (e) {
           const detail =
@@ -56,7 +60,10 @@ export function actionReducer(state: BranchState, action: Action): BranchState {
           return {
             ...state,
             branches: nextBranches,
-            errorMessage: `Failed to delete branch. ${detail}`,
+            message: {
+              type: "error",
+              text: dict.failedToDelete(detail),
+            },
           };
         }
       }
@@ -64,7 +71,7 @@ export function actionReducer(state: BranchState, action: Action): BranchState {
       const nextBranches = branches.map((b, i) =>
         i === cursorIndex ? { ...b, isSelected: !b.isSelected } : b,
       );
-      return { ...state, branches: nextBranches, errorMessage: undefined };
+      return { ...state, branches: nextBranches, message: undefined };
     }
     case "FORCE_DELETE": {
       const targetBranch = branches[cursorIndex];
@@ -84,7 +91,10 @@ export function actionReducer(state: BranchState, action: Action): BranchState {
           ...state,
           branches: localBranches,
           cursorIndex: newCursorIndex,
-          errorMessage: undefined,
+          message: {
+            type: "success",
+            text: dict.deletedBranch(targetBranch.name),
+          },
         };
       } catch (e) {
         const detail =
@@ -95,7 +105,10 @@ export function actionReducer(state: BranchState, action: Action): BranchState {
               : String(e);
         return {
           ...state,
-          errorMessage: `Failed to force delete branch. ${detail}`,
+          message: {
+            type: "error",
+            text: dict.failedToForceDelete(detail),
+          },
         };
       }
     }

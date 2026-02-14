@@ -4,17 +4,7 @@ import { SCREEN_EVENT } from "../const/screenEvent";
 import { CliError } from "../errors/cli-error";
 import { green, reverse, red } from "./colorWrapper";
 
-const dict = {
-  banner: `
-=================
-|| home-pruner ||
-=================
-`,
-  currentGitRepo: (name: string) =>
-    `*Current git repository : ${green(name)}\n`,
-  currentBranchNum: (num: string) =>
-    `*Local branches count   : ${green(num)}\n`,
-};
+import { dict } from "../const/dict";
 
 export function render(branchState: BranchState) {
   const stdout = process.stdout;
@@ -81,8 +71,7 @@ export function render(branchState: BranchState) {
         const suffix = (() => {
           const result = [];
           if (name === currentBranchName) result.push("(current)");
-          if (b.isSelected)
-            result.push("[!!] Press [Enter] to delete, [f] to force delete");
+          if (b.isSelected) result.push(dict.instruction);
           return result;
         })();
         const context = name + " " + suffix;
@@ -93,9 +82,12 @@ export function render(branchState: BranchState) {
       .join(`\n`),
   );
 
-  // errorMessage
-  if (branchState.errorMessage) {
-    builder.push(`\n\n${red(branchState.errorMessage)}`);
+  // message
+  if (branchState.message) {
+    const text = `\n\n${branchState.message.text}`;
+    builder.push(
+      branchState.message.type === "error" ? red(text) : green(text),
+    );
   }
 
   // output texts
