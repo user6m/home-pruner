@@ -6,18 +6,14 @@ import { getLocalBranches } from "./modules/getLocalBranches";
 import { actionReducer } from "./modules/actionReducer";
 import { render } from "./modules/render";
 import { postprocess } from "./modules/postprocess";
-
-export type BranchState = {
-  branches: Branch[];
-  cursorIndex: number;
-};
+import type { BranchState } from "./type/branchState";
 
 export type Action = { type: "UP" } | { type: "DOWN" } | { type: "TOGGLE" };
 
 function main() {
   const stdin = process.stdin;
   const branches: Branch[] = getLocalBranches();
-  let bracnchState: BranchState = {
+  let branchState: BranchState = {
     branches,
     cursorIndex: 0,
   };
@@ -32,7 +28,7 @@ function main() {
     }
 
     const resetSelection = () => {
-      bracnchState.branches = bracnchState.branches.map((b) => {
+      branchState.branches = branchState.branches.map((b) => {
         return { ...b, isSelected: false };
       });
     };
@@ -58,12 +54,12 @@ function main() {
 
     if (!action) return;
 
-    bracnchState = actionReducer(bracnchState, action);
-    render(bracnchState); // perform render after each action
+    branchState = actionReducer(branchState, action);
+    render(branchState); // perform render after each action
   };
 
   // start session
-  preprocess(bracnchState);
+  preprocess(branchState);
   stdin.on("data", onData);
 }
 

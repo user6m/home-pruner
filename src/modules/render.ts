@@ -1,5 +1,5 @@
 import { execFileSync } from "child_process";
-import type { BranchState } from "../main";
+import type { BranchState } from "../type/branchState";
 import { SCREEN_EVENT } from "../const/screenEvent";
 import { CliError } from "../errors/cli-error";
 import { green, reverse } from "./colorWrapper";
