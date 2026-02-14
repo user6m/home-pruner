@@ -5,6 +5,7 @@ import { KEY_EVENT } from "./const/keyEvent";
 import { getLocalBranches } from "./modules/getLocalBranches";
 import { actionReducer } from "./modules/actionReducer";
 import { render } from "./modules/render";
+import { postprocess } from "./modules/postprocess";
 
 export type BranchState = {
   branches: Branch[];
@@ -36,8 +37,7 @@ function main() {
       });
     };
 
-    let action: Action | null = null;
-    action = (() => {
+    const action: Action | null = (() => {
       switch (input) {
         case KEY_EVENT.ARROW_UP:
         case "i":
@@ -82,19 +82,6 @@ function preprocess(branchState: BranchState) {
 
   // perform initial render
   render(branchState);
-}
-
-export function postprocess() {
-  const stdout = process.stdout;
-  const stdin = process.stdin;
-  const builder = [];
-
-  builder.push(SCREEN_EVENT.EXIT_ALT_SCREEN);
-  builder.push(SCREEN_EVENT.SHOW_PIPE);
-  stdout.write(builder.join(""));
-
-  if (stdin.isRaw) stdin.setRawMode(false);
-  stdin.pause();
 }
 
 try {

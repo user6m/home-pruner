@@ -1,7 +1,7 @@
 {
   "name": "@user6m/home-pruner",
   "version": "0.1.0",
-  "description": "An interactive CLI tool to delete local git branches safely.",
+  "description": "An interactive CLI tool to delete local git branches.",
   "author": "user6m",
   "license": "MIT",
   "publishConfig": {
@@ -21,11 +21,17 @@
     "typecheck": "tsc --noEmit",
     "build": "esbuild src/main.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/main.js --banner:js=\"#!/usr/bin/env node\"",
     "dev": "npm run build -- --sourcemap=inline",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "prepublishOnly": "npm run typecheck && npm run build"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^25.0.10",
     "esbuild": "^0.27.2",
-    "typescript": "^5.9.3"
+    "eslint": "^10.0.0",
+    "globals": "^17.3.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.55.0"
   }
 }

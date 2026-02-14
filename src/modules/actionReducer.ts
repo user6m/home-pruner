@@ -1,7 +1,8 @@
 import { execFileSync } from "node:child_process";
 import { CliError } from "../errors/cli-error";
-import { postprocess, type Action, type BranchState } from "../main";
+import { postprocess } from "../modules/postprocess";
 import { getLocalBranches } from "./getLocalBranches";
+import type { Action, BranchState } from "../main";
 
 export function actionReducer(state: BranchState, action: Action) {
   const { branches, cursorIndex } = state;
