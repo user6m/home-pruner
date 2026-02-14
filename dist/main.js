@@ -61,6 +61,18 @@ function buildLocalBranches(currentBranchName, localBranchNames) {
   return formatted;
 }
 
+// src/modules/postprocess.ts
+function postprocess() {
+  const stdout = process.stdout;
+  const stdin = process.stdin;
+  const builder = [];
+  builder.push("\x1B[?1049l" /* EXIT_ALT_SCREEN */);
+  builder.push("\x1B[?25h" /* SHOW_PIPE */);
+  stdout.write(builder.join(""));
+  if (stdin.isRaw) stdin.setRawMode(false);
+  stdin.pause();
+}
+
 // src/modules/getLocalBranches.ts
 function getLocalBranches() {
   const isGitRepo = (() => {
@@ -275,8 +287,7 @@ function main() {
         return { ...b, isSelected: false };
       });
     };
-    let action = null;
-    action = (() => {
+    const action = (() => {
       switch (input) {
         case "\x1B[A" /* ARROW_UP */:
         case "i":
@@ -313,21 +324,8 @@ function preprocess(branchState) {
   stdin.setRawMode(true);
   render(branchState);
 }
-function postprocess() {
-  const stdout = process.stdout;
-  const stdin = process.stdin;
-  const builder = [];
-  builder.push("\x1B[?1049l" /* EXIT_ALT_SCREEN */);
-  builder.push("\x1B[?25h" /* SHOW_PIPE */);
-  stdout.write(builder.join(""));
-  if (stdin.isRaw) stdin.setRawMode(false);
-  stdin.pause();
-}
 try {
   main();
 } catch (e) {
   printErrorAndSetExitCode(e);
 }
-export {
-  postprocess
-};

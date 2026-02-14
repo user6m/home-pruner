@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { CliError } from "../errors/cli-error";
 import type { Branch } from "../type/branch";
 import { buildLocalBranches } from "./buildLocalBranches";
-import { postprocess } from "../main";
+import { postprocess } from "./postprocess";
 
 export function getLocalBranches(): Branch[] {
   const isGitRepo = (() => {
