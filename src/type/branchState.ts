@@ -9,4 +9,5 @@ export type BranchState = {
         text: string;
       }
     | undefined;
+  showBanner: boolean;
 };

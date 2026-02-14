@@ -1,4 +1,5 @@
 import { dict } from "../const/dict";
+import { saveConfig } from "./config";
 import { execFileSync } from "node:child_process";
 import { getLocalBranches } from "./getLocalBranches";
 import type { Action } from "../main";
@@ -111,6 +112,11 @@ export function actionReducer(state: BranchState, action: Action): BranchState {
           },
         };
       }
+    }
+    case "TOGGLE_BANNER": {
+      const showBanner = !state.showBanner;
+      saveConfig({ showBanner });
+      return { ...state, showBanner };
     }
   }
 

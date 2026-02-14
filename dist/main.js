@@ -158,6 +158,29 @@ var dict = {
   failedToForceDelete: (detail) => `Failed to force delete branch. ${detail}`
 };
 
+// src/modules/config.ts
+import { readFileSync, writeFileSync } from "fs";
+import { homedir } from "os";
+import { join } from "path";
+var CONFIG_FILE_PATH = join(homedir(), ".home-pruner.json");
+var DEFAULT_CONFIG = {
+  showBanner: true
+};
+var loadConfig = () => {
+  try {
+    const data = readFileSync(CONFIG_FILE_PATH, "utf-8");
+    return { ...DEFAULT_CONFIG, ...JSON.parse(data) };
+  } catch (e) {
+    return DEFAULT_CONFIG;
+  }
+};
+var saveConfig = (config) => {
+  try {
+    writeFileSync(CONFIG_FILE_PATH, JSON.stringify(config, null, 2));
+  } catch (e) {
+  }
+};
+
 // src/modules/actionReducer.ts
 import { execFileSync as execFileSync2 } from "node:child_process";
 function actionReducer(state, action) {
@@ -241,6 +264,11 @@ function actionReducer(state, action) {
         };
       }
     }
+    case "TOGGLE_BANNER": {
+      const showBanner = !state.showBanner;
+      saveConfig({ showBanner });
+      return { ...state, showBanner };
+    }
   }
   return state;
 }
@@ -287,11 +315,13 @@ function render(branchState) {
   const builder = [];
   builder.push("\x1B[2J" /* CLEAR_SCREEN */);
   builder.push("\x1B[H" /* MOVE_CURSOR_HOME */);
-  builder.push(dict.banner);
-  builder.push(dict.currentGitRepo(currentGitRepoName));
-  builder.push(
-    dict.currentBranchNum((branchState.branches.length ?? 0).toString())
-  );
+  if (branchState.showBanner) {
+    builder.push(dict.banner);
+    builder.push(dict.currentGitRepo(currentGitRepoName));
+    builder.push(
+      dict.currentBranchNum((branchState.branches.length ?? 0).toString())
+    );
+  }
   builder.push(
     branchState.branches.slice(startIndex, startIndex + visibleRows).map((b) => {
       const name = b.name;
@@ -323,9 +353,11 @@ ${branchState.message.text}`;
 function main() {
   const stdin = process.stdin;
   const branches = getLocalBranches();
+  const config = loadConfig();
   let branchState = {
     branches,
-    cursorIndex: 0
+    cursorIndex: 0,
+    showBanner: config.showBanner
   };
   const onData = (key) => {
     const input = typeof key === "string" ? key : key.toString("utf-8");
@@ -340,20 +372,27 @@ function main() {
       });
     };
     const action = (() => {
+      const trimmed = input.trim();
+      if (trimmed === "i") {
+        resetSelection();
+        return { type: "UP" };
+      }
+      if (trimmed === "k") {
+        resetSelection();
+        return { type: "DOWN" };
+      }
+      if (trimmed === "f") return { type: "FORCE_DELETE" };
+      if (trimmed === "t") return { type: "TOGGLE_BANNER" };
       switch (input) {
         case "\x1B[A" /* ARROW_UP */:
-        case "i":
           resetSelection();
           return { type: "UP" };
         case "\x1B[B" /* ARROW_DOWN */:
-        case "k":
           resetSelection();
           return { type: "DOWN" };
         case "\r" /* ENTER */:
         case " ":
           return { type: "TOGGLE" };
-        case "f":
-          return { type: "FORCE_DELETE" };
         default:
           resetSelection();
           return null;

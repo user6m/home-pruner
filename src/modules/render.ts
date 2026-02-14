@@ -56,11 +56,13 @@ export function render(branchState: BranchState) {
   builder.push(SCREEN_EVENT.MOVE_CURSOR_HOME);
 
   // banner
-  builder.push(dict.banner);
-  builder.push(dict.currentGitRepo(currentGitRepoName));
-  builder.push(
-    dict.currentBranchNum((branchState.branches.length ?? 0).toString()),
-  );
+  if (branchState.showBanner) {
+    builder.push(dict.banner);
+    builder.push(dict.currentGitRepo(currentGitRepoName));
+    builder.push(
+      dict.currentBranchNum((branchState.branches.length ?? 0).toString()),
+    );
+  }
 
   // content
   builder.push(

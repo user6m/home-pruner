@@ -6,20 +6,24 @@ import { getLocalBranches } from "./modules/getLocalBranches";
 import { actionReducer } from "./modules/actionReducer";
 import { render } from "./modules/render";
 import { postprocess } from "./modules/postprocess";
+import { loadConfig } from "./modules/config";
 import type { BranchState } from "./type/branchState";
 
 export type Action =
   | { type: "UP" }
   | { type: "DOWN" }
   | { type: "TOGGLE" }
-  | { type: "FORCE_DELETE" };
+  | { type: "FORCE_DELETE" }
+  | { type: "TOGGLE_BANNER" };
 
 function main() {
   const stdin = process.stdin;
   const branches: Branch[] = getLocalBranches();
+  const config = loadConfig();
   let branchState: BranchState = {
     branches,
     cursorIndex: 0,
+    showBanner: config.showBanner,
   };
   const onData = (key: Buffer | string) => {
     const input = typeof key === "string" ? key : key.toString("utf-8");
@@ -38,20 +42,31 @@ function main() {
     };
 
     const action: Action | null = (() => {
+      const trimmed = input.trim();
+
+      // robust check for letter commands
+      if (trimmed === "i") {
+        resetSelection();
+        return { type: "UP" };
+      }
+      if (trimmed === "k") {
+        resetSelection();
+        return { type: "DOWN" };
+      }
+      if (trimmed === "f") return { type: "FORCE_DELETE" };
+      if (trimmed === "t") return { type: "TOGGLE_BANNER" };
+
+      // exact check for control keys
       switch (input) {
         case KEY_EVENT.ARROW_UP:
-        case "i":
           resetSelection();
           return { type: "UP" };
         case KEY_EVENT.ARROW_DOWN:
-        case "k":
           resetSelection();
           return { type: "DOWN" };
         case KEY_EVENT.ENTER:
         case " ":
           return { type: "TOGGLE" };
-        case "f":
-          return { type: "FORCE_DELETE" };
         default:
           resetSelection();
           return null;
