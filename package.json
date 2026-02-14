@@ -1,5 +1,5 @@
 {
-  "name": "home-pruner",
+  "name": "@user6m/home-pruner",
   "version": "0.1.0",
   "description": "An interactive CLI tool to delete local git branches safely.",
   "author": "user6m",
@@ -10,6 +10,9 @@
   "files": [
     "dist"
   ],
+  "engines": {
+    "node": ">=20"
+  },
   "type": "module",
   "bin": {
     "home-pruner": "dist/main.js"

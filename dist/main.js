@@ -290,6 +290,7 @@ function main() {
         case " ":
           return { type: "TOGGLE" };
         default:
+          resetSelection();
           return null;
       }
     })();
