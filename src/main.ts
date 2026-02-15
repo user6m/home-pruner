@@ -1,3 +1,6 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { printErrorAndSetExitCode } from "./modules/printErrorAndSetExitCode";
 import type { Branch } from "./type/branch";
 import { KEY_EVENT } from "./const/keyEvent";
@@ -17,6 +20,40 @@ export type Action =
   | { type: "TOGGLE_BANNER" };
 
 export function main() {
+  const args = process.argv.slice(2);
+
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log(`
+ Usage: home-pruner [options]
+
+ Options:
+   --help, -h     Show this help message
+   --version, -v  Show version
+ `);
+    process.exit(0);
+  }
+
+  if (args.includes("--version") || args.includes("-v")) {
+    try {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = dirname(__filename);
+      const packageJsonPath = join(__dirname, "../package.json");
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+      console.log(`v${packageJson.version}`);
+    } catch {
+      console.log("Unknown version");
+    }
+    process.exit(0);
+  }
+
+  // Check if .git exists
+  if (!existsSync(join(process.cwd(), ".git"))) {
+    console.error(
+      "Error: This is not a git repository (no .git directory found).",
+    );
+    process.exit(1);
+  }
+
   const stdin = process.stdin;
   const branches: Branch[] = getLocalBranches();
   const config = loadConfig();
