@@ -1,9 +1,8 @@
 {
   "git": {
     "commit": true,
-    "tag": true,
-    "tagName": "v${version}",
-    "push": true,
+    "tag": false,
+    "push": false,
     "requireCleanWorkingDir": true,
     "commitMessage": "chore: release v${version}"
   },
