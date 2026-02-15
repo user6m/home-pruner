@@ -1,6 +1,6 @@
 {
   "name": "@user6m/home-pruner",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "An interactive CLI tool to delete local git branches.",
   "author": "user6m",
   "license": "MIT",
