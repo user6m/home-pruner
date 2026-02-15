@@ -8,8 +8,14 @@ import { postprocess } from "./modules/postprocess";
 import { preprocess } from "./modules/preprocess";
 import { KEY_EVENT } from "./const/keyEvent";
 import type { BranchState } from "./type/branchState";
+import * as fs from "node:fs";
 
 // Mock dependencies
+vi.mock("node:fs");
+vi.mock("node:path", () => ({
+  join: (...args: string[]) => args.join("/"),
+  dirname: (path: string) => path.split("/").slice(0, -1).join("/"),
+}));
 vi.mock("./modules/getLocalBranches");
 vi.mock("./modules/config");
 vi.mock("./modules/actionReducer");
@@ -24,6 +30,9 @@ describe("main", () => {
     off: ReturnType<typeof vi.fn>;
     toString: ReturnType<typeof vi.fn>;
   };
+  let exitSpy: ReturnType<typeof vi.spyOn>;
+  let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -37,9 +46,22 @@ describe("main", () => {
     vi.stubGlobal("process", {
       ...process,
       stdin: mockStdin,
+      argv: ["node", "script"], // Default args
+      cwd: () => "/app",
+      exit: vi.fn(),
     });
 
+    exitSpy = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
+    consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
     // Default mock returns
+    vi.mocked(fs.existsSync).mockReturnValue(true); // Default to valid git repo
+    vi.mocked(fs.readFileSync).mockReturnValue(
+      JSON.stringify({ version: "1.0.0" }),
+    );
     vi.mocked(getLocalBranches).mockReturnValue([
       { name: "main", isSelected: false, isCurrent: true, isSelectable: false },
     ]);
@@ -49,6 +71,54 @@ describe("main", () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("should show help and exit when --help is passed", () => {
+    vi.stubGlobal("process", {
+      ...process,
+      argv: ["node", "script", "--help"],
+      exit: exitSpy,
+    });
+    main();
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Usage: home-pruner"),
+    );
+    expect(exitSpy).toHaveBeenCalledWith(0);
+  });
+
+  it("should show version and exit when --version is passed", () => {
+    vi.stubGlobal("process", {
+      ...process,
+      argv: ["node", "script", "--version"],
+      exit: exitSpy,
+    });
+    main();
+    expect(consoleLogSpy).toHaveBeenCalledWith("v1.0.0");
+    expect(exitSpy).toHaveBeenCalledWith(0);
+  });
+
+  it("should handle unknown version gracefuly", () => {
+    vi.stubGlobal("process", {
+      ...process,
+      argv: ["node", "script", "--version"],
+      exit: exitSpy,
+    });
+    vi.mocked(fs.readFileSync).mockImplementation(() => {
+      throw new Error();
+    });
+    main();
+    expect(consoleLogSpy).toHaveBeenCalledWith("Unknown version");
+    expect(exitSpy).toHaveBeenCalledWith(0);
+  });
+
+  it("should error and exit if not a git repository", () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+    main();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining("not a git repository"),
+    );
+    expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
   it("should initialize the application correctly (Initialization)", () => {

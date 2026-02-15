@@ -27,11 +27,18 @@ pnpm add -g @user6m/home-pruner
 
 ## Usage
 
-Simply run the command in your git repository:
+Run the tool in your terminal:
 
 ```bash
 home-pruner
+# or
+npx @user6m/home-pruner
 ```
+
+### Options
+
+- `--help`, `-h`: Show help message.
+- `--version`, `-v`: Show current version.
 
 ### Controls
 
