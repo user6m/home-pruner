@@ -16,7 +16,7 @@ export type Action =
   | { type: "FORCE_DELETE" }
   | { type: "TOGGLE_BANNER" };
 
-function main() {
+export function main() {
   const stdin = process.stdin;
   const branches: Branch[] = getLocalBranches();
   const config = loadConfig();
@@ -83,8 +83,10 @@ function main() {
   stdin.on("data", onData);
 }
 
-try {
-  main();
-} catch (e) {
-  printErrorAndSetExitCode(e);
+if (process.env["NODE_ENV"] !== "test") {
+  try {
+    main();
+  } catch (e) {
+    printErrorAndSetExitCode(e);
+  }
 }

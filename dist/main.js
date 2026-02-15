@@ -351,6 +351,20 @@ ${branchState.message.text}`;
   stdout.write(builder.join(""));
 }
 
+// src/modules/preprocess.ts
+function preprocess(branchState) {
+  const stdin = process.stdin;
+  const stdout = process.stdout;
+  const builder = [];
+  builder.push("\x1B[?1049h" /* ENTER_ALT_SCREEN */);
+  builder.push("\x1B[?25l" /* HIDE_PIPE */);
+  builder.push("\x1B[H" /* MOVE_CURSOR_HOME */);
+  stdout.write(builder.join(""));
+  stdin.setEncoding("utf-8");
+  stdin.setRawMode(true);
+  render(branchState);
+}
+
 // src/main.ts
 function main() {
   const stdin = process.stdin;
@@ -406,20 +420,13 @@ function main() {
   preprocess(branchState);
   stdin.on("data", onData);
 }
-function preprocess(branchState) {
-  const stdin = process.stdin;
-  const stdout = process.stdout;
-  const builder = [];
-  builder.push("\x1B[?1049h" /* ENTER_ALT_SCREEN */);
-  builder.push("\x1B[?25l" /* HIDE_PIPE */);
-  builder.push("\x1B[H" /* MOVE_CURSOR_HOME */);
-  stdout.write(builder.join(""));
-  stdin.setEncoding("utf-8");
-  stdin.setRawMode(true);
-  render(branchState);
+if (process.env["NODE_ENV"] !== "test") {
+  try {
+    main();
+  } catch (e) {
+    printErrorAndSetExitCode(e);
+  }
 }
-try {
-  main();
-} catch (e) {
-  printErrorAndSetExitCode(e);
-}
+export {
+  main
+};
