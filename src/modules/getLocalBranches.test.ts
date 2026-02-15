@@ -61,7 +61,7 @@ describe("getLocalBranches", () => {
 
   it("should throw NOT_GIT_REPO error if not in a git repository", () => {
     // Arrange
-    vi.mocked(execFileSync).mockImplementation((cmd, args) => {
+    vi.mocked(execFileSync).mockImplementation((_cmd, args) => {
       if (args?.includes("--is-inside-work-tree"))
         throw new Error("fatal: not a git repository");
       return Buffer.from("");
@@ -80,7 +80,7 @@ describe("getLocalBranches", () => {
 
   it("should throw GIT_COMMAND_FAILED if getting current branch fails", () => {
     // Arrange
-    vi.mocked(execFileSync).mockImplementation((cmd, args) => {
+    vi.mocked(execFileSync).mockImplementation((_cmd, args) => {
       if (args?.includes("--is-inside-work-tree")) return Buffer.from("true");
       if (args?.includes("--show-current")) throw new Error("git error");
       return Buffer.from("");
@@ -100,7 +100,7 @@ describe("getLocalBranches", () => {
 
   it("should throw GIT_COMMAND_FAILED if getting local branches fails", () => {
     // Arrange
-    vi.mocked(execFileSync).mockImplementation((cmd, args) => {
+    vi.mocked(execFileSync).mockImplementation((_cmd, args) => {
       if (args?.includes("--is-inside-work-tree")) return Buffer.from("true");
       if (args?.includes("--show-current")) return Buffer.from("main");
       if (args?.includes("--format=%(refname:short)"))
