@@ -1,6 +1,5 @@
 import { printErrorAndSetExitCode } from "./modules/printErrorAndSetExitCode";
 import type { Branch } from "./type/branch";
-import { SCREEN_EVENT } from "./const/screenEvent";
 import { KEY_EVENT } from "./const/keyEvent";
 import { getLocalBranches } from "./modules/getLocalBranches";
 import { actionReducer } from "./modules/actionReducer";
@@ -8,6 +7,7 @@ import { render } from "./modules/render";
 import { postprocess } from "./modules/postprocess";
 import { loadConfig } from "./modules/config";
 import type { BranchState } from "./type/branchState";
+import { preprocess } from "./modules/preprocess";
 
 export type Action =
   | { type: "UP" }
@@ -81,23 +81,6 @@ function main() {
   // start session
   preprocess(branchState);
   stdin.on("data", onData);
-}
-
-function preprocess(branchState: BranchState) {
-  const stdin = process.stdin;
-  const stdout = process.stdout;
-  const builder = [];
-
-  builder.push(SCREEN_EVENT.ENTER_ALT_SCREEN);
-  builder.push(SCREEN_EVENT.HIDE_PIPE);
-  builder.push(SCREEN_EVENT.MOVE_CURSOR_HOME);
-  stdout.write(builder.join(""));
-
-  stdin.setEncoding("utf-8");
-  stdin.setRawMode(true);
-
-  // perform initial render
-  render(branchState);
 }
 
 try {
