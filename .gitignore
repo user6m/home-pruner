@@ -1,1 +1,12 @@
 node_modules/
+# Build artifacts
+dist/
+
+# System files
+.DS_Store
+
+# Environment variables
+.env
+
+# Test coverage
+coverage/

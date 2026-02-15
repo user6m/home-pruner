@@ -4,6 +4,22 @@
   "description": "An interactive CLI tool to delete local git branches.",
   "author": "user6m",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/user6m/home-pruner.git"
+  },
+  "keywords": [
+    "git",
+    "cli",
+    "interactive",
+    "branch",
+    "prune",
+    "delete"
+  ],
+  "bugs": {
+    "url": "https://github.com/user6m/home-pruner/issues"
+  },
+  "homepage": "https://github.com/user6m/home-pruner#readme",
   "publishConfig": {
     "access": "public"
   },
