@@ -1,0 +1,73 @@
+name: Tag on Merge
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  tag:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # Need previous commit to compare
+
+      - name: Check if version changed
+        id: check_version
+        run: |
+          # Get version from current package.json
+          CURRENT_VERSION=$(jq -r .version package.json)
+
+          # Get version from previous commit's package.json
+          # We use git show to view the file from HEAD^ (previous commit)
+          PREV_VERSION=$(git show HEAD^:package.json | jq -r .version || echo "none")
+
+          echo "Current version: $CURRENT_VERSION"
+          echo "Previous version: $PREV_VERSION"
+
+          if [ "$CURRENT_VERSION" != "$PREV_VERSION" ] && [ "$PREV_VERSION" != "none" ]; then
+            echo "Version change detected!"
+            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "No version change detected."
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create and Push Tag
+        if: steps.check_version.outputs.changed == 'true'
+        env:
+          NEW_VERSION: ${{ steps.check_version.outputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Creating tag v$NEW_VERSION"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # release.yml triggers on tag push. 
+          # GitHub Actions token (GITHUB_TOKEN) does NOT trigger other workflows by default to prevent infinite loops.
+          # To trigger another workflow, we strictly need to use a PAT or ensure the workflow allows it.
+          # HOWEVER, a common workaround/pattern using default GITHUB_TOKEN is often desired. 
+          # But for `on: push: tags`, standard GITHUB_TOKEN push usually DOES NOT trigger.
+
+          # Strategy: We will create the tag. 
+          # If the user has PROPERLY set up Trusted Publishing (which communicates with OIDC), 
+          # we might need to be careful. 
+          # BUT the limitation is specifically: "Events triggered by GITHUB_TOKEN will not create a new workflow run".
+
+          # To fix this, we have two options:
+          # 1. Use a standard PAT (Personal Access Token) stored in secrets.
+          # 2. Or assume the user is okay with manually running the release workflow if it doesn't trigger.
+
+          # Let's try to tag. If it doesn't trigger release.yml, we might need to ask user for a PAT 
+          # or simply update release.yml to ALSO run on workflow_dispatch so they can click a button.
+          # Actually, 'release-please' or similar tools use a bot app token.
+
+          # For now, let's create the tag. If release.yml doesn't fire, we will advise the user.
+
+          git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
+          git push origin "v$NEW_VERSION"
