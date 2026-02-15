@@ -2,6 +2,29 @@
 
 Thank you for your interest in contributing to Home Pruner! We welcome contributions from the community.
 
+## Tech Stack
+
+- **Language**: TypeScript
+- **Runtime**: Node.js (>=20)
+- **Package Manager**: pnpm
+- **Bundler**: esbuild
+- **Testing**: Vitest
+- **Linting**: ESLint
+
+## Project Structure
+
+```
+.
+├── src/                # Source code
+│   ├── main.ts         # Entry point
+│   ├── modules/        # Core business logic
+│   ├── const/          # Constants
+│   ├── type/           # TypeScript type definitions
+│   └── errors/         # Custom error classes
+├── .github/            # GitHub workflows and templates
+└── scripts/            # Helper scripts
+```
+
 ## Getting Started
 
 1.  Fork the repository.
@@ -14,6 +37,23 @@ Thank you for your interest in contributing to Home Pruner! We welcome contribut
 - Run tests: `pnpm test`
 - Lint code: `pnpm lint`
 - Build project: `pnpm build`
+
+## Release Process
+
+(For Maintainers)
+
+This project uses [Semantic Versioning](https://semver.org/) and [release-it](https://github.com/release-it/release-it) for release automation.
+
+To create a new release:
+
+1.  Run `pnpm run release` on the `main` branch.
+2.  Follow the interactive prompts to select the version bump.
+3.  The script will automatically:
+    - Update `package.json`
+    - Generate a git tag
+    - Push changes to GitHub
+    - Create a GitHub Release
+4.  The GitHub Action will then trigger to publish the package to npm (requires approval).
 
 ## Pull Requests
 
