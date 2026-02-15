@@ -2,6 +2,7 @@
   "git": {
     "commit": true,
     "tag": true,
+    "tagName": "v${version}",
     "push": true,
     "requireCleanWorkingDir": true,
     "commitMessage": "chore: release v${version}"
