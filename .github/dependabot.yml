@@ -5,6 +5,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    versioning-strategy: "increase"
     groups:
       # Group minor and patch updates together to reduce noise
       dependencies:
