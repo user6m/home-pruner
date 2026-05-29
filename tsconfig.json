@@ -31,7 +31,9 @@
     "skipLibCheck": true,
 
     "allowJs": true,
-    "checkJs": true
+    "checkJs": true,
+
+    "types": ["node"]
   },
   "include": ["src/**/*.ts", "eslint.config.mjs"]
 }
