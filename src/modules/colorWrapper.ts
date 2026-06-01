@@ -3,7 +3,7 @@ import { ANSI_COLORS } from "../const/colors";
 const RESET = "\x1b[0m";
 
 function wrap(code: string) {
-  return (text: string) => `${code}${text}${RESET}`;
+	return (text: string) => `${code}${text}${RESET}`;
 }
 
 export const red = wrap(ANSI_COLORS.RED);

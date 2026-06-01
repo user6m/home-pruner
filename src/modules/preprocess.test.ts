@@ -1,102 +1,105 @@
+import type { ReadStream } from "node:tty";
 import {
-  describe,
-  it,
-  expect,
-  vi,
-  beforeEach,
-  afterEach,
-  type MockInstance,
+	afterEach,
+	assert,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	type MockInstance,
+	vi,
 } from "vitest";
-import { preprocess } from "./preprocess";
 import { SCREEN_EVENT } from "../const/screenEvent";
-import { render } from "./render";
-import type { ReadStream } from "tty";
 import type { BranchState } from "../type/branchState";
+import { preprocess } from "./preprocess";
+import { render } from "./render";
 
 vi.mock("./render");
 
 describe("preprocess", () => {
-  let stdoutWriteSpy: MockInstance;
-  let stdinSetEncodingSpy: MockInstance;
-  let stdinSetRawModeSpy: MockInstance;
+	let stdoutWriteSpy: MockInstance;
+	let stdinSetEncodingSpy: MockInstance;
+	let stdinSetRawModeSpy: MockInstance;
 
-  const mockBranchState: BranchState = {
-    branches: [],
-    cursorIndex: 0,
-    showBanner: true,
-  };
+	const mockBranchState: BranchState = {
+		branches: [],
+		cursorIndex: 0,
+		showBanner: true,
+	};
 
-  beforeEach(() => {
-    stdoutWriteSpy = vi
-      .spyOn(process.stdout, "write")
-      .mockImplementation(() => true);
+	beforeEach(() => {
+		stdoutWriteSpy = vi
+			.spyOn(process.stdout, "write")
+			.mockImplementation(() => true);
 
-    const stdin = process.stdin as unknown as ReadStream;
+		const stdin = process.stdin as unknown as ReadStream;
 
-    // Mock setEncoding if it doesn't exist
-    if (!stdin.setEncoding) {
-      stdin.setEncoding = vi.fn();
-    }
-    stdinSetEncodingSpy = vi.spyOn(stdin, "setEncoding").mockReturnValue(stdin);
+		// Mock setEncoding if it doesn't exist
+		if (!stdin.setEncoding) {
+			stdin.setEncoding = vi.fn();
+		}
+		stdinSetEncodingSpy = vi.spyOn(stdin, "setEncoding").mockReturnValue(stdin);
 
-    // Mock setRawMode if it doesn't exist
-    if (!stdin.setRawMode) {
-      stdin.setRawMode = vi.fn();
-    }
-    stdinSetRawModeSpy = vi.spyOn(stdin, "setRawMode").mockReturnValue(stdin);
+		// Mock setRawMode if it doesn't exist
+		if (!stdin.setRawMode) {
+			stdin.setRawMode = vi.fn();
+		}
+		stdinSetRawModeSpy = vi.spyOn(stdin, "setRawMode").mockReturnValue(stdin);
 
-    vi.clearAllMocks();
-  });
+		vi.clearAllMocks();
+	});
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
 
-  it("should write initialization screen events to stdout", () => {
-    // Arrange
-    // (mockBranchState is ready)
+	it("should write initialization screen events to stdout", () => {
+		// Arrange
+		// (mockBranchState is ready)
 
-    // Act
-    preprocess(mockBranchState);
+		// Act
+		preprocess(mockBranchState);
 
-    // Assert
-    expect(stdoutWriteSpy).toHaveBeenCalledTimes(1);
-    const output = stdoutWriteSpy.mock.calls[0]![0];
-    expect(output).toContain(SCREEN_EVENT.ENTER_ALT_SCREEN);
-    expect(output).toContain(SCREEN_EVENT.HIDE_PIPE);
-    expect(output).toContain(SCREEN_EVENT.MOVE_CURSOR_HOME);
-  });
+		// Assert
+		expect(stdoutWriteSpy).toHaveBeenCalledTimes(1);
 
-  it("should set stdin encoding to utf-8", () => {
-    // Arrange
-    // (mockBranchState is ready)
+		assert.ok(stdoutWriteSpy.mock.calls[0]); // To avoid non-null assertion
+		const output = stdoutWriteSpy.mock.calls[0][0];
+		expect(output).toContain(SCREEN_EVENT.ENTER_ALT_SCREEN);
+		expect(output).toContain(SCREEN_EVENT.HIDE_PIPE);
+		expect(output).toContain(SCREEN_EVENT.MOVE_CURSOR_HOME);
+	});
 
-    // Act
-    preprocess(mockBranchState);
+	it("should set stdin encoding to utf-8", () => {
+		// Arrange
+		// (mockBranchState is ready)
 
-    // Assert
-    expect(stdinSetEncodingSpy).toHaveBeenCalledWith("utf-8");
-  });
+		// Act
+		preprocess(mockBranchState);
 
-  it("should enable stdin raw mode", () => {
-    // Arrange
-    // (mockBranchState is ready)
+		// Assert
+		expect(stdinSetEncodingSpy).toHaveBeenCalledWith("utf-8");
+	});
 
-    // Act
-    preprocess(mockBranchState);
+	it("should enable stdin raw mode", () => {
+		// Arrange
+		// (mockBranchState is ready)
 
-    // Assert
-    expect(stdinSetRawModeSpy).toHaveBeenCalledWith(true);
-  });
+		// Act
+		preprocess(mockBranchState);
 
-  it("should call initial render with provided state", () => {
-    // Arrange
-    const state = { ...mockBranchState };
+		// Assert
+		expect(stdinSetRawModeSpy).toHaveBeenCalledWith(true);
+	});
 
-    // Act
-    preprocess(state);
+	it("should call initial render with provided state", () => {
+		// Arrange
+		const state = { ...mockBranchState };
 
-    // Assert
-    expect(render).toHaveBeenCalledWith(state);
-  });
+		// Act
+		preprocess(state);
+
+		// Assert
+		expect(render).toHaveBeenCalledWith(state);
+	});
 });
