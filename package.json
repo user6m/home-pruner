@@ -1,59 +1,60 @@
 {
-  "name": "@user6m/home-pruner",
-  "version": "1.0.2",
-  "description": "An interactive CLI tool to delete local git branches.",
-  "author": "user6m",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/user6m/home-pruner.git"
-  },
-  "keywords": [
-    "git",
-    "cli",
-    "interactive",
-    "branch",
-    "prune",
-    "delete"
-  ],
-  "bugs": {
-    "url": "https://github.com/user6m/home-pruner/issues"
-  },
-  "homepage": "https://github.com/user6m/home-pruner#readme",
-  "publishConfig": {
-    "access": "public"
-  },
-  "files": [
-    "dist"
-  ],
-  "engines": {
-    "node": ">=20"
-  },
-  "type": "module",
-  "bin": {
-    "home-pruner": "dist/main.js"
-  },
-  "scripts": {
-    "typecheck": "tsc --noEmit",
-    "build": "esbuild src/main.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/main.js --banner:js=\"#!/usr/bin/env node\"",
-    "dev": "pnpm run build -- --sourcemap=inline",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
-    "prepublishOnly": "pnpm run typecheck && pnpm run build",
-    "test:create-unmerged": "./scripts/create-unmerged-branch.sh",
-    "test": "vitest run",
-    "release": "release-it"
-  },
-  "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@types/node": "^25.6.0",
-    "esbuild": "^0.28.0",
-    "eslint": "^10.2.1",
-    "globals": "^17.5.0",
-    "release-it": "^20.0.0",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.58.2",
-    "vitest": "^4.1.4"
-  },
-  "packageManager": "pnpm@10.29.3"
+	"name": "@user6m/home-pruner",
+	"version": "1.0.2",
+	"description": "An interactive CLI tool to delete local git branches.",
+	"author": "user6m",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/user6m/home-pruner.git"
+	},
+	"keywords": [
+		"git",
+		"cli",
+		"interactive",
+		"branch",
+		"prune",
+		"delete"
+	],
+	"bugs": {
+		"url": "https://github.com/user6m/home-pruner/issues"
+	},
+	"homepage": "https://github.com/user6m/home-pruner#readme",
+	"publishConfig": {
+		"access": "public"
+	},
+	"files": [
+		"dist"
+	],
+	"engines": {
+		"node": ">=20"
+	},
+	"type": "module",
+	"bin": {
+		"home-pruner": "dist/main.js"
+	},
+	"scripts": {
+		"typecheck": "tsc --noEmit",
+		"build": "esbuild src/main.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/main.js --banner:js=\"#!/usr/bin/env node\"",
+		"dev": "pnpm run build -- --sourcemap=inline",
+		"lint": "biome lint --write",
+		"lint:ci": "biome ci",
+		"format:ci": "biome format",
+		"check": "biome check --write",
+		"prepublishOnly": "pnpm run typecheck && pnpm run build",
+		"test:create-unmerged": "./scripts/create-unmerged-branch.sh",
+		"test": "vitest run",
+		"release": "release-it"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.16",
+		"@types/node": "^25.6.0",
+		"esbuild": "^0.28.0",
+		"globals": "^17.5.0",
+		"release-it": "^20.0.0",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.58.2",
+		"vitest": "^4.1.4"
+	},
+	"packageManager": "pnpm@10.29.3"
 }
