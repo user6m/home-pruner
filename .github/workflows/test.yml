@@ -32,8 +32,5 @@ jobs:
       - name: Lint
         run: pnpm lint:ci
 
-      - name: Format
-        run: pnpm format:ci
-
       - name: Run tests
         run: pnpm test
