@@ -34,17 +34,15 @@
 		"home-pruner": "dist/main.js"
 	},
 	"scripts": {
-		"typecheck": "tsc --noEmit",
 		"build": "esbuild src/main.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/main.js --banner:js=\"#!/usr/bin/env node\"",
 		"dev": "pnpm run build -- --sourcemap=inline",
-		"lint": "biome lint --write",
+		"fix": "biome check --write",
 		"lint:ci": "biome ci",
 		"format:ci": "biome format",
-		"check": "biome check --write",
-		"prepublishOnly": "pnpm run typecheck && pnpm run build",
-		"test:create-unmerged": "./scripts/create-unmerged-branch.sh",
+		"prepublishOnly": "tsc --noEmit & pnpm build",
 		"test": "vitest run",
-		"release": "release-it"
+		"release": "release-it",
+		"typecheck": "tsc --noEmit"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.0",
