@@ -51,10 +51,6 @@ npx @user6m/home-pruner
 | `t`            | Toggle header banner                             |
 | `q` / `Ctrl+C` | Quit                                             |
 
-## Contributing
-
-We welcome contributions! If you're interested in helping develop `home-pruner`, please read our [Contributing Guide](CONTRIBUTING.md).
-
 ## License
 
 MIT © [user6m](LICENSE)
