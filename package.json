@@ -1,6 +1,6 @@
 {
 	"name": "@user6m/home-pruner",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "An interactive CLI tool to delete local git branches.",
 	"author": "user6m",
 	"license": "MIT",
@@ -8,14 +8,7 @@
 		"type": "git",
 		"url": "git+https://github.com/user6m/home-pruner.git"
 	},
-	"keywords": [
-		"git",
-		"cli",
-		"interactive",
-		"branch",
-		"prune",
-		"delete"
-	],
+	"keywords": [],
 	"bugs": {
 		"url": "https://github.com/user6m/home-pruner/issues"
 	},
@@ -41,7 +34,6 @@
 		"format:ci": "biome format",
 		"prepublishOnly": "tsc --noEmit & pnpm build",
 		"test": "vitest run",
-		"release": "release-it",
 		"typecheck": "tsc --noEmit"
 	},
 	"devDependencies": {
@@ -49,7 +41,8 @@
 		"@types/node": "^26.0.1",
 		"esbuild": "^0.28.1",
 		"globals": "^17.7.0",
-		"release-it": "^20.2.1",
+		"knip": "^6.26.0",
+		"npm": "^12.0.1",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.62.0",
 		"vitest": "^4.1.9"
