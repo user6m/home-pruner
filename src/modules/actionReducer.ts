@@ -11,7 +11,7 @@ interface ExecError extends Error {
 
 export function actionReducer(state: BranchState, action: Action): BranchState {
 	const { branches, cursorIndex } = state;
-	switch (action.type) {
+	switch (action) {
 		case "UP": {
 			const newIndex = Math.max(0, cursorIndex - 1);
 			return newIndex === cursorIndex

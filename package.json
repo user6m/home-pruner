@@ -34,7 +34,9 @@
 		"format:ci": "biome format",
 		"prepublishOnly": "tsc --noEmit & pnpm build",
 		"test": "vitest run",
-		"typecheck": "tsc --noEmit"
+		"test:watch": "vitest watch",
+		"typecheck": "tsc --noEmit",
+		"start": "node dist/main.js"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.1",
