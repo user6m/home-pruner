@@ -180,9 +180,7 @@ describe("main", () => {
 		onData("k");
 
 		// Assert
-		expect(actionReducer).toHaveBeenCalledWith(expect.any(Object), {
-			type: "DOWN",
-		});
+		expect(actionReducer).toHaveBeenCalledWith(expect.any(Object), "DOWN");
 		expect(render).toHaveBeenCalled();
 	});
 
@@ -197,9 +195,7 @@ describe("main", () => {
 		onData("i");
 
 		// Assert
-		expect(actionReducer).toHaveBeenCalledWith(expect.any(Object), {
-			type: "UP",
-		});
+		expect(actionReducer).toHaveBeenCalledWith(expect.any(Object), "UP");
 		expect(render).toHaveBeenCalled();
 	});
 
@@ -214,9 +210,10 @@ describe("main", () => {
 		onData("f");
 
 		// Assert
-		expect(actionReducer).toHaveBeenCalledWith(expect.any(Object), {
-			type: "FORCE_DELETE",
-		});
+		expect(actionReducer).toHaveBeenCalledWith(
+			expect.any(Object),
+			"FORCE_DELETE",
+		);
 		expect(render).toHaveBeenCalled();
 	});
 
@@ -231,9 +228,10 @@ describe("main", () => {
 		onData("t");
 
 		// Assert
-		expect(actionReducer).toHaveBeenCalledWith(expect.any(Object), {
-			type: "TOGGLE_BANNER",
-		});
+		expect(actionReducer).toHaveBeenCalledWith(
+			expect.any(Object),
+			"TOGGLE_BANNER",
+		);
 		expect(render).toHaveBeenCalled();
 	});
 
@@ -248,9 +246,7 @@ describe("main", () => {
 		onData(KEY_EVENT.ENTER);
 
 		// Assert
-		expect(actionReducer).toHaveBeenCalledWith(expect.any(Object), {
-			type: "TOGGLE",
-		});
+		expect(actionReducer).toHaveBeenCalledWith(expect.any(Object), "TOGGLE");
 		expect(render).toHaveBeenCalled();
 	});
 
@@ -265,9 +261,7 @@ describe("main", () => {
 		onData(KEY_EVENT.ARROW_UP);
 
 		// Assert
-		expect(actionReducer).toHaveBeenCalledWith(expect.any(Object), {
-			type: "UP",
-		});
+		expect(actionReducer).toHaveBeenCalledWith(expect.any(Object), "UP");
 		expect(render).toHaveBeenCalled();
 	});
 });

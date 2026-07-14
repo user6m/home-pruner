@@ -12,12 +12,14 @@ import { render } from "./modules/render";
 import type { Branch } from "./type/branch";
 import type { BranchState } from "./type/branchState";
 
-export type Action =
-	| { type: "UP" }
-	| { type: "DOWN" }
-	| { type: "TOGGLE" }
-	| { type: "FORCE_DELETE" }
-	| { type: "TOGGLE_BANNER" };
+const ACTIONS = [
+	"UP",
+	"DOWN",
+	"TOGGLE",
+	"FORCE_DELETE",
+	"TOGGLE_BANNER",
+] as const;
+export type Action = (typeof ACTIONS)[number];
 
 export function main() {
 	const args = process.argv.slice(2);
@@ -84,25 +86,25 @@ export function main() {
 			// robust check for letter commands
 			if (trimmed === "i") {
 				resetSelection();
-				return { type: "UP" };
+				return "UP";
 			}
 			if (trimmed === "k") {
 				resetSelection();
-				return { type: "DOWN" };
+				return "DOWN";
 			}
-			if (trimmed === "f") return { type: "FORCE_DELETE" };
-			if (trimmed === "t") return { type: "TOGGLE_BANNER" };
+			if (trimmed === "f") return "FORCE_DELETE";
+			if (trimmed === "t") return "TOGGLE_BANNER";
 
 			// exact check for control keys
 			switch (input) {
 				case KEY_EVENT.ARROW_UP:
 					resetSelection();
-					return { type: "UP" };
+					return "UP";
 				case KEY_EVENT.ARROW_DOWN:
 					resetSelection();
-					return { type: "DOWN" };
+					return "DOWN";
 				case KEY_EVENT.ENTER:
-					return { type: "TOGGLE" };
+					return "TOGGLE";
 				default:
 					resetSelection();
 					return null;

@@ -43,7 +43,7 @@ describe("actionReducer", () => {
 		// (initialState is set in beforeEach)
 
 		// Act
-		const newState = actionReducer(initialState, { type: "DOWN" });
+		const newState = actionReducer(initialState, "DOWN");
 
 		// Assert
 		expect(newState.cursorIndex).toBe(1);
@@ -54,7 +54,7 @@ describe("actionReducer", () => {
 		initialState.cursorIndex = 2;
 
 		// Act
-		const newState = actionReducer(initialState, { type: "DOWN" });
+		const newState = actionReducer(initialState, "DOWN");
 
 		// Assert
 		expect(newState.cursorIndex).toBe(2);
@@ -65,7 +65,7 @@ describe("actionReducer", () => {
 		initialState.cursorIndex = 1;
 
 		// Act
-		const newState = actionReducer(initialState, { type: "UP" });
+		const newState = actionReducer(initialState, "UP");
 
 		// Assert
 		expect(newState.cursorIndex).toBe(0);
@@ -76,7 +76,7 @@ describe("actionReducer", () => {
 		initialState.cursorIndex = 0;
 
 		// Act
-		const newState = actionReducer(initialState, { type: "UP" });
+		const newState = actionReducer(initialState, "UP");
 
 		// Assert
 		expect(newState.cursorIndex).toBe(0);
@@ -87,7 +87,7 @@ describe("actionReducer", () => {
 		initialState.cursorIndex = 1;
 
 		// Act
-		const newState = actionReducer(initialState, { type: "TOGGLE" });
+		const newState = actionReducer(initialState, "TOGGLE");
 
 		// Assert
 		assert.ok(newState.branches[1]);
@@ -112,7 +112,7 @@ describe("actionReducer", () => {
 		]);
 
 		// Act
-		const newState = actionReducer(initialState, { type: "TOGGLE" });
+		const newState = actionReducer(initialState, "TOGGLE");
 
 		// Assert
 		expect(execFileSync).toHaveBeenCalledWith(
@@ -137,7 +137,7 @@ describe("actionReducer", () => {
 		});
 
 		// Act
-		const newState = actionReducer(initialState, { type: "TOGGLE" });
+		const newState = actionReducer(initialState, "TOGGLE");
 
 		// Assert
 		expect(newState.message?.type).toBe("error");
