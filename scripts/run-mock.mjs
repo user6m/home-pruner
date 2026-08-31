@@ -12,6 +12,7 @@ function git(args) {
 }
 
 function setUpMockRepo() {
+	// recreate from scratch on every run so the fixture state is always the same
 	if (existsSync(mockRepoDir)) {
 		rmSync(mockRepoDir, { recursive: true, force: true });
 	}
@@ -20,6 +21,7 @@ function setUpMockRepo() {
 	git(["init", "--initial-branch=main"]);
 	git(["config", "user.email", "mock@home-pruner.local"]);
 	git(["config", "user.name", "home-pruner mock"]);
+	// --allow-empty: no files needed, we just need a commit to branch off of
 	git(["commit", "--allow-empty", "-m", "chore: initial commit"]);
 
 	// merged branches: no extra commits, so `git branch -d` succeeds
@@ -44,10 +46,12 @@ console.log(
 
 setUpMockRepo();
 
+// dist/main.js is expected to already be built (same assumption as the `start` script)
 const distPath = join(__dirname, "../dist/main.js");
 const result = spawnSync("node", [distPath], {
 	cwd: mockRepoDir,
 	stdio: "inherit",
 });
 
+// status is null if the process was killed by a signal (e.g. Ctrl+C)
 process.exit(result.status ?? 0);
