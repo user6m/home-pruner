@@ -123,6 +123,39 @@ describe("render", () => {
 		expect(output).toContain("feature/2");
 	});
 
+	it("should show update notice when a newer version is available", () => {
+		// Arrange
+		const state = {
+			...mockBranchState,
+			updateAvailable: { current: "1.0.0", latest: "1.1.0" },
+		};
+
+		// Act
+		render(state);
+
+		// Assert
+		assert.ok(stdoutWriteSpy.mock.calls[0]);
+		const output = stdoutWriteSpy.mock.calls[0][0];
+		expect(output).toContain(dict.updateAvailable("1.0.0", "1.1.0"));
+	});
+
+	it("should not show update notice when banner is hidden", () => {
+		// Arrange
+		const state = {
+			...mockBranchState,
+			showBanner: false,
+			updateAvailable: { current: "1.0.0", latest: "1.1.0" },
+		};
+
+		// Act
+		render(state);
+
+		// Assert
+		assert.ok(stdoutWriteSpy.mock.calls[0]);
+		const output = stdoutWriteSpy.mock.calls[0][0];
+		expect(output).not.toContain(dict.updateAvailable("1.0.0", "1.1.0"));
+	});
+
 	it("should not show banner when showBanner is false", () => {
 		// Arrange
 		const state = { ...mockBranchState, showBanner: false };

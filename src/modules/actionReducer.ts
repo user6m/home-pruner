@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { dict } from "../const/dict";
 import type { Action } from "../main";
 import type { BranchState } from "../type/branchState";
-import { saveConfig } from "./config";
+import { loadConfig, saveConfig } from "./config";
 import { getLocalBranches } from "./getLocalBranches";
 
 interface ExecError extends Error {
@@ -119,7 +119,7 @@ export function actionReducer(state: BranchState, action: Action): BranchState {
 		}
 		case "TOGGLE_BANNER": {
 			const showBanner = !state.showBanner;
-			saveConfig({ showBanner });
+			saveConfig({ ...loadConfig(), showBanner });
 			return { ...state, showBanner };
 		}
 	}

@@ -4,12 +4,14 @@ import { join } from "node:path";
 
 export type Config = {
 	showBanner: boolean;
+	checkForUpdates: boolean;
 };
 
 const CONFIG_FILE_PATH = join(homedir(), ".home-pruner.json");
 
 const DEFAULT_CONFIG: Config = {
 	showBanner: true,
+	checkForUpdates: true,
 };
 
 export const loadConfig = (): Config => {
