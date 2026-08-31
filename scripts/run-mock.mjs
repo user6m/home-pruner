@@ -3,12 +3,10 @@
  * home-pruner against it, so branch deletion can be tried out without
  * touching a real repository.
  *
- * The fixture repo contains these branches:
- * - `main` (current branch)
- * - `feature/awesome-feature` — merged, deletable with a normal delete
- * - `bugfix/login-issue` — merged, deletable with a normal delete
- * - `feature/wip-refactor` — unmerged, requires force delete
- * - `release/v1.2.0` — unmerged, requires force delete
+ * The fixture repo contains `main` (current branch) plus the branches
+ * listed in FIXTURE_BRANCHES below: `merged` ones are deletable with a
+ * normal delete, the rest carry an extra commit not on `main` and
+ * require force delete (`f` in home-pruner).
  */
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, rmSync } from "node:fs";
@@ -18,6 +16,29 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const mockRepoDir = join(tmpdir(), "home-pruner-mock-repo");
+
+const FIXTURE_BRANCHES = [
+	{ name: "feature/awesome-feature", merged: true },
+	{ name: "feature/login-page", merged: true },
+	{ name: "feature/dark-mode", merged: true },
+	{ name: "feature/search-improvements", merged: false },
+	{ name: "feature/wip-refactor", merged: false },
+	{ name: "feature/notifications", merged: false },
+	{ name: "bugfix/login-issue", merged: true },
+	{ name: "bugfix/null-pointer", merged: true },
+	{ name: "bugfix/memory-leak", merged: false },
+	{ name: "bugfix/race-condition", merged: false },
+	{ name: "hotfix/critical-crash", merged: true },
+	{ name: "hotfix/security-patch", merged: false },
+	{ name: "release/v1.0.0", merged: true },
+	{ name: "release/v1.1.0", merged: true },
+	{ name: "release/v1.2.0", merged: false },
+	{ name: "chore/update-deps", merged: true },
+	{ name: "chore/ci-config", merged: true },
+	{ name: "docs/readme-update", merged: true },
+	{ name: "docs/api-docs", merged: false },
+	{ name: "experiment/old-idea", merged: false },
+];
 
 function git(args) {
 	execFileSync("git", args, { cwd: mockRepoDir, stdio: "ignore" });
@@ -36,16 +57,17 @@ function setUpMockRepo() {
 	// --allow-empty: no files needed, we just need a commit to branch off of
 	git(["commit", "--allow-empty", "-m", "chore: initial commit"]);
 
-	// merged branches: no extra commits, so `git branch -d` succeeds
-	git(["branch", "feature/awesome-feature"]);
-	git(["branch", "bugfix/login-issue"]);
-
-	// unmerged branches: extra commit not reachable from main, so `git branch -d` fails
-	// and force delete (`f` in home-pruner) is required
-	git(["checkout", "-b", "feature/wip-refactor"]);
-	git(["commit", "--allow-empty", "-m", "wip: refactor in progress"]);
-	git(["checkout", "-b", "release/v1.2.0", "main"]);
-	git(["commit", "--allow-empty", "-m", "chore: release prep"]);
+	for (const branch of FIXTURE_BRANCHES) {
+		if (branch.merged) {
+			// no extra commits, so `git branch -d` succeeds
+			git(["branch", branch.name]);
+			continue;
+		}
+		// extra commit not reachable from main, so `git branch -d` fails
+		// and force delete is required
+		git(["checkout", "-b", branch.name, "main"]);
+		git(["commit", "--allow-empty", "-m", `wip: ${branch.name}`]);
+	}
 
 	git(["checkout", "main"]);
 }
