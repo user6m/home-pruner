@@ -1,3 +1,15 @@
+/**
+ * Sets up a disposable git repository under the OS temp dir and runs
+ * home-pruner against it, so branch deletion can be tried out without
+ * touching a real repository.
+ *
+ * The fixture repo contains these branches:
+ * - `main` (current branch)
+ * - `feature/awesome-feature` — merged, deletable with a normal delete
+ * - `bugfix/login-issue` — merged, deletable with a normal delete
+ * - `feature/wip-refactor` — unmerged, requires force delete
+ * - `release/v1.2.0` — unmerged, requires force delete
+ */
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
