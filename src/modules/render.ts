@@ -61,14 +61,16 @@ export function render(branchState: BranchState) {
 		builder.push(
 			dict.currentBranchNum((branchState.branches.length ?? 0).toString()),
 		);
-		if (branchState.updateAvailable) {
-			builder.push(
-				dict.updateAvailable(
-					branchState.updateAvailable.current,
-					branchState.updateAvailable.latest,
-				),
-			);
-		}
+	}
+
+	// update notice (always shown, independent of the banner toggle)
+	if (branchState.updateAvailable) {
+		builder.push(
+			dict.updateAvailable(
+				branchState.updateAvailable.current,
+				branchState.updateAvailable.latest,
+			),
+		);
 	}
 
 	// content

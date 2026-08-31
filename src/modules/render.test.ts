@@ -139,7 +139,7 @@ describe("render", () => {
 		expect(output).toContain(dict.updateAvailable("1.0.0", "1.1.0"));
 	});
 
-	it("should not show update notice when banner is hidden", () => {
+	it("should still show update notice when banner is hidden", () => {
 		// Arrange
 		const state = {
 			...mockBranchState,
@@ -153,7 +153,7 @@ describe("render", () => {
 		// Assert
 		assert.ok(stdoutWriteSpy.mock.calls[0]);
 		const output = stdoutWriteSpy.mock.calls[0][0];
-		expect(output).not.toContain(dict.updateAvailable("1.0.0", "1.1.0"));
+		expect(output).toContain(dict.updateAvailable("1.0.0", "1.1.0"));
 	});
 
 	it("should not show banner when showBanner is false", () => {
