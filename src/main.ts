@@ -1,10 +1,11 @@
-import { existsSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { KEY_EVENT } from "./const/keyEvent";
 import { actionReducer } from "./modules/actionReducer";
+import { checkForUpdate } from "./modules/checkForUpdate";
 import { loadConfig } from "./modules/config";
 import { getLocalBranches } from "./modules/getLocalBranches";
+import { getPackageInfo } from "./modules/getPackageInfo";
 import { postprocess } from "./modules/postprocess";
 import { preprocess } from "./modules/preprocess";
 import { printErrorAndSetExitCode } from "./modules/printErrorAndSetExitCode";
@@ -36,15 +37,8 @@ export function main() {
 	}
 
 	if (args.includes("--version") || args.includes("-v")) {
-		try {
-			const __filename = fileURLToPath(import.meta.url);
-			const __dirname = dirname(__filename);
-			const packageJsonPath = join(__dirname, "../package.json");
-			const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
-			console.log(`v${packageJson.version}`);
-		} catch {
-			console.log("Unknown version");
-		}
+		const packageInfo = getPackageInfo();
+		console.log(packageInfo ? `v${packageInfo.version}` : "Unknown version");
 		process.exit(0);
 	}
 
@@ -64,11 +58,13 @@ export function main() {
 		cursorIndex: 0,
 		showBanner: config.showBanner,
 	};
+	let sessionEnded = false;
 	const onData = (key: Buffer | string) => {
 		const input = typeof key === "string" ? key : key.toString("utf-8");
 
 		// end session
 		if (input === KEY_EVENT.CTRL_C || input === "q") {
+			sessionEnded = true;
 			stdin.off("data", onData);
 			postprocess();
 			return;
@@ -120,6 +116,28 @@ export function main() {
 	// start session
 	preprocess(branchState);
 	stdin.on("data", onData);
+
+	// check for a newer version in the background; never blocks startup
+	if (config.checkForUpdates) {
+		const packageInfo = getPackageInfo();
+		if (packageInfo) {
+			checkForUpdate(packageInfo)
+				.then((latestVersion) => {
+					if (!latestVersion || sessionEnded) return;
+					branchState = {
+						...branchState,
+						updateAvailable: {
+							current: packageInfo.version,
+							latest: latestVersion,
+						},
+					};
+					render(branchState);
+				})
+				.catch(() => {
+					// ignore errors; update notification is best-effort
+				});
+		}
+	}
 }
 
 if (process.env["NODE_ENV"] !== "test") {

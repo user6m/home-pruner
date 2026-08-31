@@ -8,6 +8,7 @@ An interactive CLI tool to delete local git branches safely and efficiently.
 - **Safe Deletion**: Integrated checks to prevent accidental deletion of unmerged branches.
 - **Keyboard Navigation**: Supports both arrow keys and Vim-style (`j`/`k`) navigation.
 - **Force Delete**: Option to forcefully delete stubborn branches.
+- **Update Notifications**: Lets you know when a newer version is published (no forced or automatic updates).
 
 ## Installation
 
@@ -50,6 +51,18 @@ npx @user6m/home-pruner
 | `f`            | **Force Delete** (equivalent to `git branch -D`) |
 | `t`            | Toggle header banner                             |
 | `q` / `Ctrl+C` | Quit                                             |
+
+### Update Notifications
+
+home-pruner checks the npm registry in the background (at most once every 24 hours, with a short timeout so it never blocks the app) for a newer release, and shows a notice in the header when one is available. It never updates automatically — you decide when to run `npm install -g @user6m/home-pruner`.
+
+To disable the check, add `"checkForUpdates": false` to `~/.home-pruner.json`:
+
+```json
+{
+	"checkForUpdates": false
+}
+```
 
 ## Development
 
