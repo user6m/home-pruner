@@ -1,54 +1,54 @@
 {
-	"name": "@user6m/home-pruner",
-	"version": "1.0.3",
-	"description": "An interactive CLI tool to delete local git branches.",
-	"author": "user6m",
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/user6m/home-pruner.git"
-	},
-	"keywords": [],
-	"bugs": {
-		"url": "https://github.com/user6m/home-pruner/issues"
-	},
-	"homepage": "https://github.com/user6m/home-pruner#readme",
-	"publishConfig": {
-		"access": "public"
-	},
-	"files": [
-		"dist"
-	],
-	"engines": {
-		"node": ">=20"
-	},
-	"type": "module",
-	"bin": {
-		"home-pruner": "dist/main.js"
-	},
-	"scripts": {
-		"build": "esbuild src/main.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/main.js --banner:js=\"#!/usr/bin/env node\"",
-		"dev": "pnpm run build -- --sourcemap=inline",
-		"fix": "biome check --write",
-		"lint:ci": "biome ci",
-		"format:ci": "biome format",
-		"prepublishOnly": "tsc --noEmit & pnpm build",
-		"test": "vitest run",
-		"test:watch": "vitest watch",
-		"typecheck": "tsc --noEmit",
-		"start": "node dist/main.js",
-		"start:mock": "node scripts/run-mock.mjs"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^2.5.11",
-		"@types/node": "^26.4.0",
-		"esbuild": "^0.28.2",
-		"globals": "^17.11.0",
-		"knip": "^6.32.3",
-		"npm": "^12.0.2",
-		"typescript": "^7.0.2",
-		"typescript-eslint": "^8.68.0",
-		"vitest": "^4.1.11"
-	},
-	"packageManager": "pnpm@10.29.3"
+  "name": "@user6m/home-pruner",
+  "version": "1.0.4",
+  "description": "An interactive CLI tool to delete local git branches.",
+  "author": "user6m",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/user6m/home-pruner.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/user6m/home-pruner/issues"
+  },
+  "homepage": "https://github.com/user6m/home-pruner#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "type": "module",
+  "bin": {
+    "home-pruner": "dist/main.js"
+  },
+  "scripts": {
+    "build": "esbuild src/main.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/main.js --banner:js=\"#!/usr/bin/env node\"",
+    "dev": "pnpm run build -- --sourcemap=inline",
+    "fix": "biome check --write",
+    "lint:ci": "biome ci",
+    "format:ci": "biome format",
+    "prepublishOnly": "tsc --noEmit & pnpm build",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/main.js",
+    "start:mock": "node scripts/run-mock.mjs"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.11",
+    "@types/node": "^26.4.0",
+    "esbuild": "^0.28.2",
+    "globals": "^17.11.0",
+    "knip": "^6.32.3",
+    "npm": "^12.0.2",
+    "typescript": "^7.0.2",
+    "typescript-eslint": "^8.68.0",
+    "vitest": "^4.1.11"
+  },
+  "packageManager": "pnpm@10.29.3"
 }
