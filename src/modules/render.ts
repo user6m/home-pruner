@@ -63,6 +63,16 @@ export function render(branchState: BranchState) {
 		);
 	}
 
+	// update notice (always shown, independent of the banner toggle)
+	if (branchState.updateAvailable) {
+		builder.push(
+			dict.updateAvailable(
+				branchState.updateAvailable.current,
+				branchState.updateAvailable.latest,
+			),
+		);
+	}
+
 	// content
 	builder.push(
 		branchState.branches

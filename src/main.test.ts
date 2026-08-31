@@ -11,6 +11,7 @@ import {
 import { KEY_EVENT } from "./const/keyEvent";
 import { main } from "./main";
 import { actionReducer } from "./modules/actionReducer";
+import { checkForUpdate } from "./modules/checkForUpdate";
 import { loadConfig } from "./modules/config";
 import { getLocalBranches } from "./modules/getLocalBranches";
 import { postprocess } from "./modules/postprocess";
@@ -31,6 +32,7 @@ vi.mock("./modules/render");
 vi.mock("./modules/postprocess");
 vi.mock("./modules/preprocess");
 vi.mock("./modules/printErrorAndSetExitCode");
+vi.mock("./modules/checkForUpdate");
 
 describe("main", () => {
 	let mockStdin: {
@@ -73,8 +75,12 @@ describe("main", () => {
 		vi.mocked(getLocalBranches).mockReturnValue([
 			{ name: "main", isSelected: false, isCurrent: true, isSelectable: false },
 		]);
-		vi.mocked(loadConfig).mockReturnValue({ showBanner: true });
+		vi.mocked(loadConfig).mockReturnValue({
+			showBanner: true,
+			checkForUpdates: true,
+		});
 		vi.mocked(actionReducer).mockImplementation((state) => state);
+		vi.mocked(checkForUpdate).mockResolvedValue(null);
 	});
 
 	afterEach(() => {
@@ -263,5 +269,62 @@ describe("main", () => {
 		// Assert
 		expect(actionReducer).toHaveBeenCalledWith(expect.any(Object), "UP");
 		expect(render).toHaveBeenCalled();
+	});
+
+	it("should re-render with update info when a newer version is available", async () => {
+		// Arrange
+		vi.mocked(checkForUpdate).mockResolvedValue("2.0.0");
+
+		// Act
+		main();
+		await vi.waitFor(() => {
+			expect(checkForUpdate).toHaveBeenCalled();
+		});
+		// allow the checkForUpdate promise chain to settle
+		await Promise.resolve();
+		await Promise.resolve();
+
+		// Assert
+		expect(render).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				updateAvailable: { current: "1.0.0", latest: "2.0.0" },
+			}),
+		);
+	});
+
+	it("should not check for updates when disabled in config", () => {
+		// Arrange
+		vi.mocked(loadConfig).mockReturnValue({
+			showBanner: true,
+			checkForUpdates: false,
+		});
+
+		// Act
+		main();
+
+		// Assert
+		expect(checkForUpdate).not.toHaveBeenCalled();
+	});
+
+	it("should not re-render after the session has ended", async () => {
+		// Arrange
+		vi.mocked(checkForUpdate).mockResolvedValue("2.0.0");
+
+		// Act
+		main();
+		const mockedStdin = vi.mocked(mockStdin.on);
+		assert.ok(mockedStdin.mock.calls[0]);
+		const onData = mockedStdin.mock.calls[0][1];
+		onData("q");
+		vi.mocked(render).mockClear();
+
+		await vi.waitFor(() => {
+			expect(checkForUpdate).toHaveBeenCalled();
+		});
+		await Promise.resolve();
+		await Promise.resolve();
+
+		// Assert
+		expect(render).not.toHaveBeenCalled();
 	});
 });

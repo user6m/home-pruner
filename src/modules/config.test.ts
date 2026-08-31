@@ -47,7 +47,7 @@ describe("config", () => {
 			const config = loadConfig();
 
 			// Assert
-			expect(config).toEqual({ showBanner: true });
+			expect(config).toEqual({ showBanner: true, checkForUpdates: true });
 			expect(readFileSyncSpy).toHaveBeenCalledWith(MOCK_CONFIG_PATH, "utf-8");
 		});
 
@@ -60,7 +60,7 @@ describe("config", () => {
 			const config = loadConfig();
 
 			// Assert
-			expect(config).toEqual({ showBanner: false });
+			expect(config).toEqual({ showBanner: false, checkForUpdates: true });
 		});
 
 		it("should return default config if config file contains invalid JSON", () => {
@@ -71,14 +71,14 @@ describe("config", () => {
 			const config = loadConfig();
 
 			// Assert
-			expect(config).toEqual({ showBanner: true });
+			expect(config).toEqual({ showBanner: true, checkForUpdates: true });
 		});
 	});
 
 	describe("saveConfig", () => {
 		it("should save config to file", () => {
 			// Arrange
-			const config = { showBanner: false };
+			const config = { showBanner: false, checkForUpdates: true };
 
 			// Act
 			saveConfig(config);
@@ -92,7 +92,7 @@ describe("config", () => {
 
 		it("should ignore errors during save", () => {
 			// Arrange
-			const config = { showBanner: false };
+			const config = { showBanner: false, checkForUpdates: true };
 			writeFileSyncSpy.mockImplementation(() => {
 				throw new Error("Write failed");
 			});

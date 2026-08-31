@@ -10,4 +10,10 @@ export type BranchState = {
 		  }
 		| undefined;
 	showBanner: boolean;
+	updateAvailable?:
+		| {
+				current: string;
+				latest: string;
+		  }
+		| undefined;
 };
