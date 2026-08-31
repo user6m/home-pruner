@@ -51,6 +51,10 @@ npx @user6m/home-pruner
 | `t`            | Toggle header banner                             |
 | `q` / `Ctrl+C` | Quit                                             |
 
+## Development
+
+For contributors: `pnpm start:mock` lets you try out home-pruner (including branch deletion and force deletion) against a disposable, fixture-filled git repository instead of your own, so you don't have to manage test branches in your real repo. See [docs/dev.md](docs/dev.md) for details.
+
 ## License
 
 MIT © [user6m](LICENSE)
