@@ -1,0 +1,16 @@
+name: Add PBI to Product Backlog project
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  add-to-project:
+    runs-on: ubuntu-24.04
+    if: contains(github.event.issue.labels.*.name, 'pbi')
+    steps:
+      - name: Add issue to Product Backlog project
+        uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: https://github.com/users/user6m/projects/5
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
