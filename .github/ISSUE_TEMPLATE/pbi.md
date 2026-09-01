@@ -2,7 +2,7 @@
 name: PBI
 about: バックログにアイテム積む際に利用するテンプレート
 title: ''
-labels: ''
+labels: 'pbi'
 assignees: user6m
 
 ---
