@@ -54,7 +54,7 @@ npx @user6m/home-pruner
 
 ### Update Notifications
 
-home-pruner checks the npm registry in the background (at most once every 24 hours, with a short timeout so it never blocks the app) for a newer release, and shows a notice in the header when one is available. It never updates automatically — you decide when to run `npm install -g @user6m/home-pruner`.
+home-pruner checks the npm registry in the background (at most once every 24 hours, with a short timeout so it never blocks the app) for a newer release, and shows a notice in the header when one is available. It never updates automatically — you decide when to update `@user6m/home-pruner` using whichever package manager you installed it with (npm, pnpm, yarn, etc.).
 
 To disable the check, add `"checkForUpdates": false` to `~/.home-pruner.json`:
 

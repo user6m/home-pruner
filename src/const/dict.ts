@@ -7,7 +7,7 @@ export const dict = {
 	currentBranchNum: (num: string) =>
 		`*Local branches count   : ${green(num)}\n`,
 	updateAvailable: (current: string, latest: string) =>
-		`${cyan(`*Update available       : v${current} -> v${latest} (npm install -g @user6m/home-pruner)`)}\n`,
+		`${cyan(`*Update available       : v${current} -> v${latest} (package: @user6m/home-pruner)`)}\n`,
 	deletionPending: "[Pending] Press Enter to delete(or f to force delete)",
 	keyGuide: `\n${reverse("^C")} Quit  ${reverse("Enter")} Toggle/Delete  ${reverse("f")} Force Delete  ${reverse("t")} Toggle Banner`,
 	deletedBranch: (name: string) => `Deleted branch: ${name}`,
