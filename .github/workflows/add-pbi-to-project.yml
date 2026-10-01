@@ -10,7 +10,7 @@ jobs:
     if: contains(github.event.issue.labels.*.name, 'pbi')
     steps:
       - name: Add issue to Product Backlog project
-        uses: actions/add-to-project@v1.0.2
+        uses: actions/add-to-project@v2.0.0
         with:
           project-url: https://github.com/users/user6m/projects/5
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
